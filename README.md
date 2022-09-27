@@ -1,2 +1,4 @@
 # lprintsv
-label print server
+label print server  
+
+it needs ba400 server.  
