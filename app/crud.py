@@ -28,6 +28,19 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
+def update_user(user_id: int, db: Session, user: schemas.UserUpdate):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if db_user:
+        db_user.email=user.email 
+        db_user.name=user.name
+        #db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return db_user
+    else:
+        return []
+
+
 
 def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
