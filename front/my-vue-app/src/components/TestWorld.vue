@@ -14,6 +14,7 @@ const count = ref(0)
 
   <h1> test</h1>
   {{msg}}
+  <h1> test</h1>
 
 </template>
 
