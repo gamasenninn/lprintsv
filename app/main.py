@@ -20,6 +20,7 @@ def get_db():
         db.close()
 
 
+#------ user API -------
 @app.post("/users/", response_model=schemas.User)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
@@ -49,11 +50,11 @@ def update_user(user_id: int, user: schemas.UserUpdate,db: Session = Depends(get
     return crud.update_user(user_id=user_id, db=db, user=user)
 
 
-
+#--------- items ------------
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 def create_item_for_user(
     user_id: int, item: schemas.ItemCreate, db: Session = Depends(get_db)
-):
+    ):
     return crud.create_user_item(db=db, item=item, user_id=user_id)
 
 
@@ -62,6 +63,27 @@ def read_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     items = crud.get_items(db, skip=skip, limit=limit)
     return items
 
+#--------- orders ------------
+@app.post("/users/{user_id}/orders/", response_model=schemas.Order)
+def create_order_for_user(
+    user_id: int, order: schemas.OrderCreate, db: Session = Depends(get_db)
+    ):
+    return crud.create_user_order(db=db, order=order, user_id=user_id)
+
+
+@app.get("/orders/", response_model=list[schemas.Order])
+def read_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    orders = crud.get_orders(db, skip=skip, limit=limit)
+    
+    return orders
+
+
+
+
+
+#------- test --------
 @app.get("/tests/", response_model=list[schemas.Test])
 def read_tests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_tests(db, skip=skip, limit=limit)
+
+

@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 
+#--- user API -------
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
@@ -43,6 +44,7 @@ def update_user(user_id: int, db: Session, user: schemas.UserUpdate):
         return []
 
 
+#--- item API -------
 
 def get_items(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Item).offset(skip).limit(limit).all()
@@ -58,3 +60,17 @@ def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
 
 def get_tests(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Test).offset(skip).limit(limit).all()
+
+#--- item API -------
+
+def get_orders(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Order).offset(skip).limit(limit).all()
+
+
+def create_user_order(db: Session, order: schemas.OrderCreate, user_id: int):
+    db_order = models.Order(**order.dict(), owner_id=user_id)
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+    return db_order
+

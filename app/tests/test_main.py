@@ -73,6 +73,12 @@ def test_read_user():
         print(user_id,data["email"])
         assert data["id"] == user_id
 
+    response = client.get(f"/users")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert len(data) >= 3 
+
+
 def test_update_user():
     response = client.post(
         "/users/",

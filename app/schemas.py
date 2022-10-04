@@ -3,8 +3,10 @@ from typing import Union
 
 from pydantic import BaseModel
 from pydantic import Field
+from datetime import datetime,date
 
 
+#-------- Item ---------------------
 class ItemBase(BaseModel):
     title: str
     description: Union[str, None] = None
@@ -13,7 +15,6 @@ class ItemBase(BaseModel):
 class ItemCreate(ItemBase):
     pass
 
-
 class Item(ItemBase):
     id: int
     owner_id: int
@@ -21,7 +22,32 @@ class Item(ItemBase):
     class Config:
         orm_mode = True
 
+#------ Oder --------
+class OrderBase(BaseModel):
+    scode: str
 
+
+class OrderCreate(OrderBase):
+    title: str 
+    in_date: date
+    person: str 
+    memo = str
+
+class OrderUpdate(OrderBase):
+    title: str 
+    in_date: date
+    person: str 
+    memo = str
+
+class Order(OrderBase):
+    owner_id: int
+    create_at: datetime
+    update_at: datetime
+
+    class Config:
+        orm_mode = True
+
+#------ User --------
 class UserBase(BaseModel):
     email: str
 
@@ -41,11 +67,14 @@ class User(UserBase):
     name: str
     is_active: bool
     items: list[Item] = []
+    orders: list[Order] = []
 
     class Config:
         orm_mode = True
 
 
+
+#---- Test
 class TestBase(BaseModel):
     name: str = Field(alias="aname")
 
@@ -57,3 +86,5 @@ class Test(TestBase):
 
     class Config:
         orm_mode = True
+
+
