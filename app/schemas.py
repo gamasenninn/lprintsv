@@ -31,16 +31,16 @@ class OrderBase(BaseModel):
 
 
 class OrderCreate(OrderBase):
-    title: str 
-    in_date: datetime.date
-    person: str 
+    title: Optional[str] = None  
+    in_date: Optional[datetime.date] = ""
+    person: Optional[str]=None 
     memo : Optional[str] = None
 
 class OrderUpdate(OrderBase):
-    title: str 
+    title: Optional[str] = None 
     in_date: datetime.date
-    person: str 
-    memo : str
+    person: Optional[str] = None 
+    memo : Optional[str] = None
 
 class Order(OrderBase):
     owner_id: int
