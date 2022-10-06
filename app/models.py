@@ -1,5 +1,5 @@
-from ast import alias
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date,DateTime
+#from ast import alias
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date,DateTime,DATETIME,FetchedValue
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -14,6 +14,8 @@ class User(Base):
     hashed_password = Column(String)
     name = Column(String, default='')
     is_active = Column(Boolean, default=True)
+    created_at = Column(DATETIME, default=datetime.now)
+    updated_at = Column(DATETIME, default=datetime.now, onupdate=datetime.now)
 
     items = relationship("Item", back_populates="owner")
     orders = relationship("Order", back_populates="owner")
@@ -34,12 +36,12 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     scode = Column(String, index=True)
     title = Column(String, default='')
-    in_date = Column(DateTime)
+    in_date = Column(Date)
     person = Column(String, default='')
     memo = Column(String, default='')
     owner_id = Column(Integer, ForeignKey("users.id"))
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+    created_at = Column(DATETIME, default=datetime.now)
+    updated_at = Column(DATETIME, default=datetime.now, onupdate=datetime.now)
 
     owner = relationship("User", back_populates="orders")
 

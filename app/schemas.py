@@ -1,9 +1,12 @@
-from ast import alias
-from typing import Union
+#from ast import alias
+from datetime import datetime,date
+from typing import Union,List,Optional
+#from xmlrpc.client import DateTime
 
 from pydantic import BaseModel
 from pydantic import Field
-from datetime import datetime,date
+
+import datetime
 
 
 #-------- Item ---------------------
@@ -29,20 +32,24 @@ class OrderBase(BaseModel):
 
 class OrderCreate(OrderBase):
     title: str 
-    in_date: date
+    in_date: datetime.date
     person: str 
-    memo = str
+    memo : Optional[str] = None
 
 class OrderUpdate(OrderBase):
     title: str 
-    in_date: date
+    in_date: datetime.date
     person: str 
-    memo = str
+    memo : str
 
 class Order(OrderBase):
     owner_id: int
-    create_at: datetime
-    update_at: datetime
+    title: str 
+    in_date: datetime.date
+    person: str 
+    memo : str
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
 
     class Config:
         orm_mode = True
@@ -66,6 +73,8 @@ class User(UserBase):
     id: int
     name: str
     is_active: bool
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
     items: list[Item] = []
     orders: list[Order] = []
 

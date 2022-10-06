@@ -73,13 +73,8 @@ def create_order_for_user(
 
 @app.get("/orders/", response_model=list[schemas.Order])
 def read_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    orders = crud.get_orders(db, skip=skip, limit=limit)
-    
+    orders = crud.get_orders(db, skip=skip, limit=limit)   
     return orders
-
-
-
-
 
 #------- test --------
 @app.get("/tests/", response_model=list[schemas.Test])
