@@ -28,26 +28,20 @@ class Item(ItemBase):
 #------ Oder --------
 class OrderBase(BaseModel):
     scode: str
+    title: Union[str, None] = None
+    in_date: Union[datetime.date,None] = None
+    person: Union[str, None] = None
+    memo : Union[str, None] = None
 
 
 class OrderCreate(OrderBase):
-    title: Optional[str] = None  
-    in_date: Optional[datetime.date] = ""
-    person: Optional[str]=None 
-    memo : Optional[str] = None
-
+    pass
 class OrderUpdate(OrderBase):
-    title: Optional[str] = None 
-    in_date: datetime.date
-    person: Optional[str] = None 
-    memo : Optional[str] = None
+    pass
 
 class Order(OrderBase):
+    id: int
     owner_id: int
-    title: str 
-    in_date: datetime.date
-    person: str 
-    memo : str
     created_at: datetime.datetime
     updated_at: datetime.datetime
 

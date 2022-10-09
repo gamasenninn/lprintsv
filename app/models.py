@@ -35,10 +35,10 @@ class Order(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     scode = Column(String, index=True)
-    title = Column(String, default='')
+    title = Column(String)
     in_date = Column(Date)
-    person = Column(String, default='')
-    memo = Column(String, default='')
+    person = Column(String)
+    memo = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DATETIME, default=datetime.now)
     updated_at = Column(DATETIME, default=datetime.now, onupdate=datetime.now)

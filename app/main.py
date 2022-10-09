@@ -44,12 +44,11 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 
 @app.put("/users/{user_id}", response_model=schemas.User)
 def update_user(user_id: int, user: schemas.UserUpdate,db: Session = Depends(get_db)):
-    db_user = crud.get_user(db, user_id=user_id)
+    db_user = crud.update_user(user_id=user_id, db=db, user=user)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return crud.update_user(user_id=user_id, db=db, user=user)
-
-
+    return db_user
+ 
 #--------- items ------------
 @app.post("/users/{user_id}/items/", response_model=schemas.Item)
 def create_item_for_user(
@@ -70,11 +69,33 @@ def create_order_for_user(
     ):
     return crud.create_user_order(db=db, order=order, user_id=user_id)
 
+@app.put("/orders/{id}", response_model=schemas.Order)
+def update_order(
+    id: int, order: schemas.OrderUpdate, db: Session = Depends(get_db)
+    ):
+    db_order = crud.update_order(db=db, order=order, id=id)
+    if db_order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return db_order
+
+
+@app.delete("/orders/{id}", response_model=schemas.Order)
+def delete_order(
+    id: int, db: Session = Depends(get_db)
+    ):
+    db_order = crud.delete_order(db=db,  id=id)
+    if db_order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return db_order
+
 
 @app.get("/orders/", response_model=list[schemas.Order])
 def read_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    orders = crud.get_orders(db, skip=skip, limit=limit)   
-    return orders
+
+    db_orders = crud.get_orders(db, skip=skip, limit=limit)
+    #if db_orders is None:
+    #    raise HTTPException(status_code=404, detail="User not found")   
+    return db_orders
 
 #------- test --------
 @app.get("/tests/", response_model=list[schemas.Test])

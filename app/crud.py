@@ -40,8 +40,8 @@ def update_user(user_id: int, db: Session, user: schemas.UserUpdate):
         db.commit()
         db.refresh(db_user)
         return db_user
-    else:
-        return []
+    #else:
+    #    return []
 
 
 #--- item API -------
@@ -61,7 +61,7 @@ def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
 def get_tests(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Test).offset(skip).limit(limit).all()
 
-#--- item API -------
+#--- Order API -------
 
 def get_orders(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Order).offset(skip).limit(limit).all()
@@ -74,3 +74,24 @@ def create_user_order(db: Session, order: schemas.OrderCreate, user_id: int):
     db.refresh(db_order)
     return db_order
 
+def update_order(db: Session, order: schemas.OrderUpdate, id: int):
+    db_order = db.query(models.Order).filter(models.Order.id == id).first()
+    if db_order:
+
+        db_order.scode=order.scode 
+        db_order.title=order.title 
+        db_order.in_date=order.in_date 
+        db_order.person=order.person 
+        db_order.memo=order.memo 
+
+        db.commit()
+        db.refresh(db_order)
+        return db_order
+
+def delete_order(db: Session,  id: int):
+    db_order = db.query(models.Order).filter(models.Order.id == id).first()
+    if db_order:
+        db.delete(db_order)
+        db.commit()
+        #db.refresh(db_order)
+        return db_order
