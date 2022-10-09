@@ -22,6 +22,7 @@ TestingSessionLocal = sessionmaker(
 
 models.Base.metadata.create_all(bind=engine)
 
+
 def override_get_db():
     try:
         db = TestingSessionLocal()
@@ -29,11 +30,14 @@ def override_get_db():
     finally:
         db.close()
 
+
 app.dependency_overrides[get_db] = override_get_db
 
 client = TestClient(app)
 
 # ------------ USER --------------
+
+
 def test_create_user():
     response = client.post(
         "/users/",
@@ -102,10 +106,11 @@ def test_update_user():
 
     response = client.put(
         f"/users/{user_id}",
-        json={"email": "updated@example.com",
-              "name": "ono_updated",
-              "is_active": True
-              }
+        json={
+            "email": "updated@example.com",
+            "name": "ono_updated",
+            "is_active": True
+        }
     )
     assert response.status_code == 200, response.text
     data = response.json()
@@ -122,6 +127,8 @@ def test_update_user():
     assert response.status_code == 404, response.text
 
 # ------------ ORDERS --------------
+
+
 def test_create_order():
     response = client.post(
         "/users/",
@@ -145,7 +152,7 @@ def test_create_order():
             "in_date": "2022-10-01",
             "person": "ono",
             "memo": "test-memo"
-        },
+        }
     )
     assert response.status_code == 200, response.text
     data = response.json()
@@ -178,7 +185,7 @@ def test_read_order():
                 "in_date": "2022-10-01",
                 "person": "ono{i}",
                 "memo": "test-memo{i}"
-            },
+            }
         )
         assert response.status_code == 200, response.text
         data = response.json()
@@ -248,6 +255,7 @@ def test_update_order():
         }
     )
     assert response.status_code == 404, response.text
+
 
 def test_delete_order():
     response = client.post(
