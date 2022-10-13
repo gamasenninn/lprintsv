@@ -149,7 +149,7 @@ def test_create_order():
         json={
             "scode": "1111-1",
             "title": "test-title",
-            "in_date": "2022-10-01",
+            "inDate": "2022-10-01",
             "person": "ono",
             "memo": "test-memo"
         }
@@ -182,7 +182,7 @@ def test_read_order():
             json={
                 "scode": f"22222-{i}",
                 "title": "test-title-{i}",
-                "in_date": "2022-10-01",
+                "inDate": "2022-10-01",
                 "person": "ono{i}",
                 "memo": "test-memo{i}"
             }
@@ -217,7 +217,7 @@ def test_update_order():
         json={
             "scode": "44444-1",
             "title": "test-title-for-update",
-            "in_date": "2022-10-01",
+            "inDate": "2022-10-01",
             "person": "ono",
             "memo": "test-memo-for-update"
         }
@@ -234,7 +234,7 @@ def test_update_order():
         json={
             "scode": "44444-1-updated",
             "title": "test-title-for-update-updated",
-            "in_date": "2022-10-01",
+            "inDate": "2022-10-01",
             "person": "ono-updated",
             "memo": "test-memo-for-update-updated"
         }
@@ -249,7 +249,7 @@ def test_update_order():
         json={
             "scode": "44444-222-updated",
             "title": "test-title-for-update-updated",
-            "in_date": "2022-10-01",
+            "inDate": "2022-10-01",
             "person": "ono-updated",
             "memo": "test-memo-for-update-updated"
         }
@@ -275,7 +275,7 @@ def test_delete_order():
         json={
             "scode": "55555-1",
             "title": "test-title-for-delete",
-            "in_date": "2022-10-01",
+            "inDate": "2022-10-01",
             "person": "ono",
             "memo": "test-memo-for-delete"
         }

@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from pydantic import Field
 
 import datetime
+import stringcase
+
 
 
 #-------- Item ---------------------
@@ -29,15 +31,27 @@ class Item(ItemBase):
 class OrderBase(BaseModel):
     scode: str
     title: Union[str, None] = None
-    in_date: Union[datetime.date,None] = None
+    in_date: Union[datetime.date,None] = None 
+    #in_date = Field(alias="inDate")
     person: Union[str, None] = None
     memo : Union[str, None] = None
 
+    class Config:
+        alias_genetator = stringcase.camelcase         
+        allow_population_by_field_name = True
+
 
 class OrderCreate(OrderBase):
-    pass
+    class Config:
+        pass
+        #allow_population_by_field_name = True
+        #alias_genetator = stringcase.camelcase         
+
 class OrderUpdate(OrderBase):
-    pass
+    class Config:
+        pass
+        #allow_population_by_field_name = True
+        #alias_genetator = stringcase.camelcase         
 
 class Order(OrderBase):
     id: int
@@ -47,6 +61,8 @@ class Order(OrderBase):
 
     class Config:
         orm_mode = True
+        alias_generator = stringcase.camelcase
+        allow_population_by_field_name = True
 
 #------ User --------
 class UserBase(BaseModel):
