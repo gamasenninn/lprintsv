@@ -36,7 +36,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     scode = Column(String, index=True)
     title = Column(String)
-    in_date = Column(Date)
+    in_date = Column(Date,default=None)
     person = Column(String)
     memo = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
