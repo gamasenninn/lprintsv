@@ -217,7 +217,7 @@ def test_update_order():
         json={
             "scode": "44444-1",
             "title": "test-title-for-update",
-            "inDate": "2022-10-01",
+            "receiptDate": "2022-10-01",
             "person": "ono",
             "memo": "test-memo-for-update"
         }
@@ -226,6 +226,7 @@ def test_update_order():
     data = response.json()
     assert data["scode"] == "44444-1"
     assert data["title"] == "test-title-for-update"
+    assert data["receiptDate"] == "2022-10-01"
 
     order_id = data["id"]
 
@@ -234,7 +235,7 @@ def test_update_order():
         json={
             "scode": "44444-1-updated",
             "title": "test-title-for-update-updated",
-            "inDate": "2022-10-01",
+            "receiptDate": "2022-10-02",
             "person": "ono-updated",
             "memo": "test-memo-for-update-updated"
         }
@@ -243,13 +244,14 @@ def test_update_order():
     data = response.json()
     assert data["scode"] == "44444-1-updated"
     assert data["title"] == "test-title-for-update-updated"
+    assert data["receiptDate"] == "2022-10-02"
 
     response = client.put(
         f"/orders/9999",
         json={
             "scode": "44444-222-updated",
             "title": "test-title-for-update-updated",
-            "inDate": "2022-10-01",
+            "receiptDate": "2022-10-04",
             "person": "ono-updated",
             "memo": "test-memo-for-update-updated"
         }
@@ -275,7 +277,7 @@ def test_delete_order():
         json={
             "scode": "55555-1",
             "title": "test-title-for-delete",
-            "inDate": "2022-10-01",
+            "receiptDate": "2022-10-01",
             "person": "ono",
             "memo": "test-memo-for-delete"
         }
@@ -284,6 +286,8 @@ def test_delete_order():
     data = response.json()
     assert data["scode"] == "55555-1"
     assert data["title"] == "test-title-for-delete"
+    assert data["receiptDate"] == "2022-10-01"
+
     order_id = data["id"]
 
     response = client.delete(f"/orders/{order_id}")
