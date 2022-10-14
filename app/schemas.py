@@ -31,22 +31,20 @@ class Item(ItemBase):
 class OrderBase(BaseModel):
     scode: str
     title: Union[str, None] = None
-    in_date: Union[datetime.date,None] = None 
-    #in_date: datetime.datetime 
-    #in_date = Field(alias="inDate")
+    receipt_date: Union[datetime.date,None] = None 
     person: Union[str, None] = None
     memo : Union[str, None] = None
 
     class Config:
-        alias_genetator = stringcase.camelcase         
+        alias_generator = stringcase.camelcase
         allow_population_by_field_name = True
 
 
 class OrderCreate(OrderBase):
     pass
     #class Config:
-        #allow_population_by_field_name = True
         #alias_genetator = stringcase.camelcase         
+        #allow_population_by_field_name = True
 
 class OrderUpdate(OrderBase):
     pass
@@ -63,8 +61,8 @@ class Order(OrderBase):
 
     class Config:
         orm_mode = True
-        alias_generator = stringcase.camelcase
-        allow_population_by_field_name = True
+        #alias_generator = stringcase.camelcase
+        #allow_population_by_field_name = True
 
 #------ User --------
 class UserBase(BaseModel):
@@ -95,8 +93,6 @@ class User(UserBase):
 
     class Config:
         orm_mode = True
-
-
 
 #---- Test
 class TestBase(BaseModel):
