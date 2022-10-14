@@ -79,7 +79,7 @@ def update_order(
     return db_order
 
 
-@app.delete("/orders/{id}", response_model=schemas.Order)
+@app.delete("/orders/{id}", response_model=schemas.OrderDelete)
 def delete_order(
     id: int, db: Session = Depends(get_db)
     ):

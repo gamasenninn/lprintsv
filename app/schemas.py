@@ -1,5 +1,5 @@
 from datetime import datetime,date
-from typing import Union,List,Optional
+from typing import Union,List,Optional,Dict
 
 from pydantic import BaseModel
 from pydantic import Field
@@ -7,6 +7,12 @@ from pydantic import Field
 import datetime
 import stringcase
 
+#------- reference for User ------
+class UserRef(BaseModel):
+    name: str
+    is_active: bool
+    class Config:
+        orm_mode = True
 
 
 #-------- Item ---------------------
@@ -21,6 +27,7 @@ class ItemCreate(ItemBase):
 class Item(ItemBase):
     id: int
     owner_id: int
+    owner: UserRef
 
     class Config:
         orm_mode = True
@@ -44,11 +51,15 @@ class OrderCreate(OrderBase):
 class OrderUpdate(OrderBase):
     pass
 
+class OrderDelete(OrderBase):
+    pass
+
 class Order(OrderBase):
     id: int
     owner_id: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    owner: Union[UserRef,None]
 
     class Config:
         orm_mode = True
@@ -90,6 +101,9 @@ class TestBase(BaseModel):
 
 class Test(TestBase):
     id: int
+    日本語名前: str  # = Field(alias="日本語名前")
+    日本語住所: str  # = Field(alias="日本語住所")
+
     #日本語名前: str  # = Field(alias="日本語名前")
     #日本語住所: str  # = Field(alias="日本語住所")
 

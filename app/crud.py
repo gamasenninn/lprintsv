@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 import models
 import schemas
 
+import copy
+
 #--- user API -------
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -47,8 +49,11 @@ def update_user(user_id: int, db: Session, user: schemas.UserUpdate):
 #--- item API -------
 
 def get_items(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Item).offset(skip).limit(limit).all()
 
+    items = db.query(models.Item).offset(skip).limit(limit).all()
+    for item in items: 
+        print("items:",item.owner.name)
+    return items
 
 def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
     db_item = models.Item(**item.dict(), owner_id=user_id)
@@ -91,7 +96,9 @@ def update_order(db: Session, order: schemas.OrderUpdate, id: int):
 def delete_order(db: Session,  id: int):
     db_order = db.query(models.Order).filter(models.Order.id == id).first()
     if db_order:
+        #db_order_copy = copy.deepcopy(db_order)
         db.delete(db_order)
         db.commit()
         #db.refresh(db_order)
-        return db_order
+        #return db_order
+        return []

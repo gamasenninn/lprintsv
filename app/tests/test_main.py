@@ -292,9 +292,9 @@ def test_delete_order():
 
     response = client.delete(f"/orders/{order_id}")
     assert response.status_code == 200, response.text
-    data = response.json()
-    assert data["scode"] == "55555-1"
-    assert data["title"] == "test-title-for-delete"
+    #data = response.json()
+    #assert data["scode"] == "55555-1"
+    #assert data["title"] == "test-title-for-delete"
 
     response = client.delete(f"/orders/9999")
     assert response.status_code == 404, response.text
