@@ -80,7 +80,7 @@ def update_order(db: Session, order: schemas.OrderUpdate, id: int):
 
         db_order.scode=order.scode 
         db_order.title=order.title 
-        db_order.in_date=order.in_date 
+        db_order.receipt_date=order.receipt_date 
         db_order.person=order.person 
         db_order.memo=order.memo 
 
