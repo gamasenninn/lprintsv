@@ -4,7 +4,6 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from fastapi.testclient import TestClient
 
-#from database import Base
 if True:  # 自動成形で順番が変えられないようにダミー処理
     sys.path.append("../../app")
     import models
@@ -292,9 +291,9 @@ def test_delete_order():
 
     response = client.delete(f"/orders/{order_id}")
     assert response.status_code == 200, response.text
-    #data = response.json()
-    #assert data["scode"] == "55555-1"
-    #assert data["title"] == "test-title-for-delete"
+    data = response.json()
+    print("data:", data)
+    assert data["result"] == "ok"
 
     response = client.delete(f"/orders/9999")
     assert response.status_code == 404, response.text

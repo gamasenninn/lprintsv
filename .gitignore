@@ -131,3 +131,4 @@ dmypy.json
 # any ignored
 *.db
 app/migration/versions/
+app/convert/

@@ -51,9 +51,6 @@ class OrderCreate(OrderBase):
 class OrderUpdate(OrderBase):
     pass
 
-class OrderDelete(OrderBase):
-    pass
-
 class Order(OrderBase):
     id: int
     owner_id: int

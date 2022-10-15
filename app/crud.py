@@ -1,12 +1,7 @@
 from sqlalchemy.orm import Session
 
-#import models
-#import schemas
-
 import models
 import schemas
-
-import copy
 
 #--- user API -------
 def get_user(db: Session, user_id: int):
@@ -96,9 +91,6 @@ def update_order(db: Session, order: schemas.OrderUpdate, id: int):
 def delete_order(db: Session,  id: int):
     db_order = db.query(models.Order).filter(models.Order.id == id).first()
     if db_order:
-        #db_order_copy = copy.deepcopy(db_order)
         db.delete(db_order)
         db.commit()
-        #db.refresh(db_order)
-        #return db_order
-        return []
+        return {"result":"ok"}

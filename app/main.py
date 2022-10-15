@@ -10,7 +10,6 @@ from database import SessionLocal, engine
 
 app = FastAPI()
 
-
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -79,14 +78,14 @@ def update_order(
     return db_order
 
 
-@app.delete("/orders/{id}", response_model=schemas.OrderDelete)
+@app.delete("/orders/{id}", response_model=None)
 def delete_order(
     id: int, db: Session = Depends(get_db)
     ):
-    db_order = crud.delete_order(db=db,  id=id)
-    if db_order is None:
+    ret = crud.delete_order(db=db,  id=id)
+    if ret is None:
         raise HTTPException(status_code=404, detail="Order not found")
-    return db_order
+    return ret 
 
 
 @app.get("/orders/", response_model=list[schemas.Order])
