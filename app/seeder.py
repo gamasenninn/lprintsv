@@ -39,6 +39,7 @@ def make_orders(db:Session,v):
             scode = "12345-1",
             title = "クボタ コンバイン2条刈",
             person = "田中",
+            memo = 'メモ01',
             owner_id = 1,
             receipt_date = date(2021,10,1)
         ),
@@ -47,6 +48,7 @@ def make_orders(db:Session,v):
             scode = "23456-1",
             title = "イセキ トラクター 30馬力",
             person = "佐藤",
+            memo = 'メモ02',
             owner_id = 1,
             receipt_date = date(2021,10,1)
         ),
@@ -55,6 +57,7 @@ def make_orders(db:Session,v):
             scode = "34567-1",
             title = "ヤンマー　田植機 3条植",
             person = "小野",
+            memo = 'メモ03',
             owner_id = 2,
             receipt_date = date(2021,10,1)
         ),
@@ -63,6 +66,7 @@ def make_orders(db:Session,v):
             scode = "45678-1",
             title = "イセキ トラクター 30馬力",
             person = "斎藤",
+            memo = 'メモ04',
             owner_id = 2,
             receipt_date = date(2021,10,1)
         ),
@@ -96,7 +100,7 @@ def seeder(v=False):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description='seeder -- makeing test data for soho-caddie')
+        description='seeder -- makeing test data for label print server')
     parser.add_argument('-v', '--verbose',
                         help='output data', action='store_true')
     args = parser.parse_args()
