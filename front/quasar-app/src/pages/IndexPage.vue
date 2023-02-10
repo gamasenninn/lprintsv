@@ -1,7 +1,18 @@
 <template>
+  <div class="q-pa-md q-gutter-sm">
+    <q-btn color="white" text-color="black" label="Standard" />
+    <q-btn color="primary" label="Primary" />
+    <q-btn color="secondary" label="Secondary" />
+    <q-btn color="amber" glossy label="Amber" />
+    <q-btn color="brown-5" label="Brown 5" />
+    <q-btn color="deep-orange" glossy label="Deep Orange" />
+    <q-btn color="purple" label="Purple" />
+    <q-btn color="black" label="Black" />
+  </div>
+  
   <q-page class="row items-center justify-evenly">
     <example-component
-      title="Example component"
+      title="Example test component"
       active
       :todos="todos"
       :meta="meta"
@@ -38,10 +49,15 @@ export default defineComponent({
       {
         id: 5,
         content: 'ct5'
+      },
+      {
+        id: 6,
+        content: 'ct6'
       }
+
     ]);
     const meta = ref<Meta>({
-      totalCount: 1200
+      totalCount: 100
     });
     return { todos, meta };
   }
