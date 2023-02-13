@@ -2,11 +2,6 @@
   import { ref } from 'vue'
   import axios from 'axios'
   const gitData = ref([])
-  const columns = [
-          {name: 'login',label:'ログインID' ,field:'login',sortable:true},
-          {name: 'node_id',label:'ノードID' ,field:'node_id'},
-          {name: 'repos_url',label:'リポジトリURL' ,field:'repos_url'},
-        ]
   const getGithub = async ()=>{
     await axios.get('https://api.github.com/users')
         .then((response) =>{
@@ -23,7 +18,11 @@
       <q-table 
         title="Github List" 
         :rows="gitData" 
-        :columns="columns" 
+        :columns=" [
+          {name: 'login',label:'ログインID' ,field:'login',sortable:true},
+          {name: 'node_id',label:'ノードID' ,field:'node_id'},
+          {name: 'repos_url',label:'リポジトリURL' ,field:'repos_url'},
+        ]"
         row-key="login" 
         no-data-label="データがありません"
         class="q-mt-md"

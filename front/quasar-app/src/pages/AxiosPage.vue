@@ -5,7 +5,11 @@
       <q-table 
         title="Github List" 
         :rows="gitData" 
-        :columns="columns" 
+        :columns=" [
+          {name: 'login',label:'ログインID' ,field:'login',sortable:true},
+          {name: 'node_id',label:'ノードID' ,field:'node_id'},
+          {name: 'repos_url',label:'リポジトリURL' ,field:'repos_url'},
+        ]"
         row-key="login" 
         no-data-label="データがありません"
         class="q-mt-md"
@@ -28,12 +32,7 @@
     name: "AxiosPage",
     data(){
       return{
-        gitData:[],
-        columns:[
-          {name: 'login',label:'ログインID' ,field:'login',sortable:true},
-          {name: 'node_id',label:'ノードID' ,field:'node_id'},
-          {name: 'repos_url',label:'リポジトリURL' ,field:'repos_url'},
-        ]
+        gitData:[]
       }
     },
     methods:{
