@@ -30,6 +30,16 @@
         >
           Essential Links
         </q-item-label>
+        <q-item to="/ordersPage" exact>
+          <q-item-section avatar>
+            <q-icon name="print" />
+          </q-item-section>
+          <q-item-section>
+            <q-item-label>Label Print</q-item-label>
+            <q-item-label caption>check & printing</q-item-label>
+          </q-item-section>
+
+        </q-item>
 
         <EssentialLink
           v-for="link in essentialLinks"
@@ -50,6 +60,12 @@ import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 
 const linksList = [
+  {
+    title: 'Label Print',
+    caption: 'print label',
+    icon: 'print',
+    to: '/ordersPage'
+  },
   {
     title: 'Docs',
     caption: 'quasar.dev',
