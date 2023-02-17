@@ -1,10 +1,7 @@
 <template>
-
-  <q-item 
-    clickable
-    :[directive]="link"
-    :tag="itemTag"
-    :target="itemTarget"
+  <q-item
+    :to="link"
+    exact
   >
     <q-item-section
       v-if="icon"
@@ -24,7 +21,7 @@
 import { defineComponent } from 'vue';
 
 export default defineComponent({
-  name: 'EssentialLink',
+  name: 'LocalLink',
   props: {
     title: {
       type: String,
@@ -44,21 +41,7 @@ export default defineComponent({
     icon: {
       type: String,
       default: ''
-    },
-    directive:{
-      type: String,
-      default: 'href'
     }
-  },
-  computed:{
-    itemTag() {
-      return this.directive === 'href' ? 'a' : '';
-    },
-    itemTarget() {
-      return this.directive === 'href' ? '_blank' : '';
-    }
-
   }
-
 });
 </script>

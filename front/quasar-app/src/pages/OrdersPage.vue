@@ -16,7 +16,7 @@
 </script>
 
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="q-pa-md" >
     <h5 class="q-mt-none">Axios Test</h5>
     <q-btn color="primary" label="Refresh" @click="getGithub"/>
     <q-table 
