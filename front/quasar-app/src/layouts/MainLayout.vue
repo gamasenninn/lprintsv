@@ -30,17 +30,15 @@
         >
           Essential Links
         </q-item-label>
-        <q-item to="/ordersPage" exact>
-          <q-item-section avatar>
-            <q-icon name="print" />
-          </q-item-section>
-          <q-item-section>
-            <q-item-label>Label Print</q-item-label>
-            <q-item-label caption>check & printing</q-item-label>
-          </q-item-section>
+<!--
 
-        </q-item>
-
+        <LocalLink
+          title = "Label Print"
+          caption = "check & printing ......."
+          icon = "print"
+          link = "/ordersPage"
+        />
+-->      
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
@@ -58,13 +56,22 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
+import LocalLink from 'src/components/LocalLink.vue';
 
 const linksList = [
   {
-    title: 'Label Print',
-    caption: 'print label',
+    title: 'Lable Print',
+    caption: 'checck and print -----',
     icon: 'print',
-    to: '/ordersPage'
+    link: '/ordersPage',
+    directive: 'to',
+  },
+  {
+    title: 'GitHub User',
+    caption: 'GitHub user list......',
+    icon: 'code',
+    link: '/axios2',
+    directive: 'to',
   },
   {
     title: 'Docs',
@@ -114,7 +121,8 @@ export default defineComponent({
   name: 'MainLayout',
 
   components: {
-    EssentialLink
+    EssentialLink,
+    //LocalLink
   },
 
   setup () {
