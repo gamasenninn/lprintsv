@@ -12,7 +12,7 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          Label Printer server Ver. 0.0.0
         </q-toolbar-title>
 
         <div>Quasar v{{ $q.version }}</div>
