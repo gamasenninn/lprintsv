@@ -25,20 +25,19 @@
       bordered
     >
       <q-list>
-        <q-item-label
-          header
-        >
+        <q-item-label header>
+          Applications
+        </q-item-label>
+        <LocalLink
+          v-for="link in localLinks"
+          :key="link.title"
+          v-bind="link"
+        />
+      </q-list>
+      <q-list>
+        <q-item-label header>
           Essential Links
         </q-item-label>
-<!--
-
-        <LocalLink
-          title = "Label Print"
-          caption = "check & printing ......."
-          icon = "print"
-          link = "/ordersPage"
-        />
--->      
         <EssentialLink
           v-for="link in essentialLinks"
           :key="link.title"
@@ -46,9 +45,12 @@
         />
       </q-list>
     </q-drawer>
-
     <q-page-container>
-      <router-view />
+        <router-view v-slot="{Component}">
+          <keep-alive>
+            <component :is="Component" />
+          </keep-alive>
+        </router-view>
     </q-page-container>
   </q-layout>
 </template>
@@ -58,21 +60,22 @@ import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 import LocalLink from 'src/components/LocalLink.vue';
 
-const linksList = [
+const localLinksList = [
   {
-    title: 'Lable Print',
-    caption: 'checck and print -----',
+    title: 'Label Print',
+    caption: 'check & printing ......',
     icon: 'print',
-    link: '/ordersPage',
-    directive: 'to',
+    link: '/ordersPage'
   },
   {
-    title: 'GitHub User',
-    caption: 'GitHub user list......',
+    title: 'Github users',
+    caption: 'test for axuis  ......',
     icon: 'code',
-    link: '/axios2',
-    directive: 'to',
+    link: '/axios2'
   },
+]
+
+const linksList = [
   {
     title: 'Docs',
     caption: 'quasar.dev',
@@ -98,18 +101,6 @@ const linksList = [
     link: 'https://forum.quasar.dev'
   },
   {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
     title: 'Quasar Awesome',
     caption: 'Community Quasar projects',
     icon: 'favorite',
@@ -122,7 +113,7 @@ export default defineComponent({
 
   components: {
     EssentialLink,
-    //LocalLink
+    LocalLink
   },
 
   setup () {
@@ -130,6 +121,7 @@ export default defineComponent({
 
     return {
       essentialLinks: linksList,
+      localLinks: localLinksList,
       leftDrawerOpen,
       toggleLeftDrawer () {
         leftDrawerOpen.value = !leftDrawerOpen.value
