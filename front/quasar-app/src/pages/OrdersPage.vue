@@ -3,17 +3,23 @@
   import { ref,onMounted } from 'vue'
   import axios from 'axios'
 
-  const gitData = ref([])
-  const DEBUG = false
+  const printData = ref([])
+  const DEBUG = true
   const selected = ref([])
   const showMessage = ref(false)
 
-  const getGithub = async ()=>{
-    const response = await axios.get('http://localhost:8000/orders/')
-    gitData.value = response.data
+  const printList = async ()=>{
+    const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
+    if (PRINT_SERVER_URL === undefined) {
+      console.warn('PRINT_SERVER_URL is not defined')
+      return
+    }
+    const response = await axios.get(PRINT_SERVER_URL)
+    printData.value = response.data
   }
+
   onMounted(() => {
-    getGithub()
+    printList()
   })
 
   const columns=[
@@ -27,7 +33,6 @@
   const printLabel = () =>{
     alert("now printng.......")
     showMessage.value = false
-
   }
 
 </script>
@@ -35,10 +40,10 @@
 <template>
   <q-page class="q-pa-md" >
     <h5 class="q-mt-none">Axios Test</h5>
-    <q-btn color="primary" label="Refresh" @click="getGithub"/>
+    <q-btn color="primary" label="Refresh" @click="printList"/>
     <q-table 
       title="Lable List" 
-      :rows="gitData" 
+      :rows="printData" 
       :columns="columns"
       row-key="scode" 
       no-data-label="データがありません"
