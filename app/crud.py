@@ -66,6 +66,8 @@ def get_tests(db: Session, skip: int = 0, limit: int = 100):
 def get_orders(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Order).offset(skip).limit(limit).all()
 
+def get_orders_by_id(db: Session, order_id: int):
+    return db.query(models.Order).filter(models.Order.id == order_id).first()
 
 def create_user_order(db: Session, order: schemas.OrderCreate, user_id: int):
     db_order = models.Order(**order.dict(), owner_id=user_id)
@@ -78,11 +80,12 @@ def update_order(db: Session, order: schemas.OrderUpdate, id: int):
     db_order = db.query(models.Order).filter(models.Order.id == id).first()
     if db_order:
 
-        db_order.scode=order.scode 
-        db_order.title=order.title 
-        db_order.receipt_date=order.receipt_date 
-        db_order.person=order.person 
-        db_order.memo=order.memo 
+        db_order.scode=order.scode
+        db_order.title=order.title
+        db_order.receipt_date=order.receipt_date
+        db_order.person=order.person
+        db_order.memo=order.memo
+        db_order.status=order.status
 
         db.commit()
         db.refresh(db_order)

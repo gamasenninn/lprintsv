@@ -105,6 +105,16 @@ def read_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     #    raise HTTPException(status_code=404, detail="User not found")   
     return db_orders
 
+@app.get("/orders/{id}", response_model=schemas.Order)
+def read_orders_by_id(
+    id: int, db: Session = Depends(get_db)
+    ):
+    db_order = crud.get_orders_by_id(db=db, order_id=id)
+    if db_order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return db_order
+
+
 #------- test --------
 @app.get("/tests/", response_model=list[schemas.Test])
 def read_tests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

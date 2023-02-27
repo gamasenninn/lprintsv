@@ -15,7 +15,7 @@
 
 <template>
   <q-page class="q-pa-lg">
-    <h5 class="q-mt-none">Axios Test</h5>
+    <h5 class="q-mt-none">Github User List(for axios test)</h5>
     <q-btn color="primary" label="Github list" @click="getGithub"/>
     <q-table 
       title="Github List" 

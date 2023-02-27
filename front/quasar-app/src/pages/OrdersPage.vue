@@ -2,10 +2,17 @@
 <script setup lang="ts">
   import { ref,onMounted } from 'vue'
   import axios from 'axios'
+import internal from 'stream';
 
   const printData = ref([])
   const DEBUG = true
-  const selected = ref([])
+  interface Selected{
+    scode: string,
+    status: string,
+    id: number
+    //その必要ならば型定義を増やしていくこと
+  }
+  const selected = ref<Selected[]>([])
   const showMessage = ref(false)
 
   const printList = async ()=>{
@@ -28,10 +35,21 @@
         {name: 'receiptDate',label:'日付' ,field:'receiptDate'},
         {name: 'person',label:'担当' ,field:'person'},
         {name: 'ownwer',label:'発行者' ,field: row=>row.owner.name},
+        {name: 'status',label:'状態' ,field: 'status'},
       ]
 
-  const printLabel = () =>{
+  const printLabel = async () =>{
+    const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
     alert("now printng.......")
+    if(selected.value.length > 0){
+      selected.value.forEach( async selData =>{
+        selData.status = "printed"
+        console.log('selected:', selData.scode,selData.id)
+        const put_url = `${PRINT_SERVER_URL}${selData.id}`
+        console.log("url:",put_url)
+        const response = await axios.put(put_url,selData)
+      });
+    }
     showMessage.value = false
   }
 
@@ -39,7 +57,7 @@
 
 <template>
   <q-page class="q-pa-md" >
-    <h5 class="q-mt-none">Axios Test</h5>
+    <h5 class="q-mt-none">Label Print</h5>
     <q-btn color="primary" label="Refresh" @click="printList"/>
     <q-table 
       title="Lable List" 
@@ -52,14 +70,6 @@
       v-model:selected="selected"
     >
     </q-table>
-    <div v-if="DEBUG">
-      <div>
-        {{ selected }}
-      </div>
-      <ul class="q-mt-md">
-        <li v-for="data in gitData" :key="data.scode">{{ data }}</li>
-      </ul>
-    </div>
     <q-btn color="primary" class = "q-mt-md" label="Print Label" @click="showMessage=true"/>
     <q-dialog v-model="showMessage">
       <q-card>
@@ -74,5 +84,14 @@
         </q-card-actions>
       </q-card>
     </q-dialog> 
+    <div v-if="DEBUG">
+      <div>
+        {{ selected }}
+      </div>
+      <ul class="q-mt-md">
+        <li v-for="data in printData" :key="data.scode">{{ data }}</li>
+      </ul>
+    </div>
+
   </q-page>
 </template>

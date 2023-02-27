@@ -73,9 +73,21 @@ const localLinksList = [
     icon: 'code',
     link: '/axios2'
   },
+  {
+    title: 'GPT TEST',
+    caption: 'GPT-3 API test  ......',
+    icon: 'code',
+    link: '/chat'
+  },
 ]
 
 const linksList = [
+{
+    title: 'swagger',
+    caption: 'API DOCS',
+    icon: 'school',
+    link: 'http://localhost:8000/docs'
+  },
   {
     title: 'Docs',
     caption: 'quasar.dev',

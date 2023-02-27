@@ -39,6 +39,7 @@ class OrderBase(BaseModel):
     receipt_date: Union[datetime.date,None] = None 
     person: Union[str, None] = None
     memo : Union[str, None] = None
+    status : Union[str, None] = None
 
     class Config:
         alias_generator = stringcase.camelcase

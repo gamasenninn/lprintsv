@@ -39,6 +39,7 @@ class Order(Base):
     receipt_date = Column(Date,default=None)
     person = Column(String)
     memo = Column(String)
+    status = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
     created_at = Column(DATETIME, default=datetime.now)
     updated_at = Column(DATETIME, default=datetime.now, onupdate=datetime.now)
