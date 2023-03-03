@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "ace-builds": "^1.15.3",
+    "vue3-ace-editor": "^2.2.2"
+  }
+}

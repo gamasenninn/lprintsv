@@ -68,6 +68,12 @@ const localLinksList = [
     link: '/ordersPage'
   },
   {
+    title: 'Print Script Editot',
+    caption: 'Edit for print script ......',
+    icon: 'print',
+    link: '/pedit'
+  },
+  {
     title: 'Github users',
     caption: 'test for axuis  ......',
     icon: 'code',
@@ -82,11 +88,17 @@ const localLinksList = [
 ]
 
 const linksList = [
-{
+  {
     title: 'swagger',
     caption: 'API DOCS',
     icon: 'school',
     link: 'http://localhost:8000/docs'
+  },
+  {
+    title: 'tpcl editor',
+    caption: 'TPCL script maker',
+    icon: 'school',
+    link: 'http://localhost:8000/tpcledit'
   },
   {
     title: 'Docs',

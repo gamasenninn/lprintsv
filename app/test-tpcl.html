@@ -1,0 +1,290 @@
+<html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="images/favicon.ico" rel="shortcut icon">
+
+<title>tpcl maker</title>
+<!-- Load required Bootstrap and BootstrapVue CSS -->
+
+<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap@4.5.3/dist/css/bootstrap.min.css" />
+<link type="text/css" rel="stylesheet" href="https://unpkg.com/bootstrap-vue@2.21.1/dist/bootstrap-vue.min.css" />
+
+<!-- Load fontawesome -->
+<!-- link href="./css/all.css" rel="stylesheet" -->
+<!--load all styles -->
+<!-- <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
+<link href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" rel="stylesheet">
+
+<!-- Load polyfills to support older browsers -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es2015%2CIntersectionObserver"
+  crossorigin="anonymous"></script>
+
+<!-- Load Vue followed by BootstrapVue -->
+<script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>
+<script src="https://unpkg.com/bootstrap-vue@2.21.1/dist/bootstrap-vue.min.js"></script>
+
+<!-- Load the following for BootstrapVueIcons support -->
+<script src="https://unpkg.com/bootstrap-vue@2.21.1/dist/bootstrap-vue-icons.min.js"></script>
+
+<!-- script src="https://unpkg.com/axios/dist/axios.min.js"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/axios@1.0.0/dist/axios.min.js"></script> 
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+  integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+<!-- 各種便利なツール塁です必要なときに随時使用のこと
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vue-image-lightbox@6.4.0/dist/vue-image-lightbox.min.css">
+<script src="https://cdn.jsdelivr.net/npm/vue-image-lightbox@6.4.0/dist/vue-image-lightbox.min.js"></script>
+<script src="https://unpkg.com/vue-lazyload/vue-lazyload.js"></script>
+<script src="./jsQR.js"></script>
+<script src="https://cozmo.github.io/jsQR/jsQR.js"></script>
+-->
+
+<!-- This will create a global `JSON5` variable. -->
+<script src="https://unpkg.com/json5@2/dist/index.min.js"></script>
+
+
+<style>
+  .bg {
+    background-color: #e9ecef;
+  }
+
+  [v-cloak] {
+    display: none;
+  }
+</style>
+
+<!--   mock up here -->
+<div id="app">
+  <b-container class="pt-2">
+    <!-- b-row class="justify-content-center" -->
+    <b-card nobody title="TPCL表示テスト(JSONファイルからTPCLを作成)" style="max-width: 100rem;" class="bg-transparent border-0">
+      <b-form-file v-model="upfile" class="mt-3" plain></b-form-file>
+      <b-row class="mt-3">
+        <b-col>
+          <div id="editor" style="min-height: 400px" class="mb-3"></div>
+          <b-button variant="primary" class="text-center mr-3" @click="checkLayout">check layout</b-button>
+          <b-button variant="primary" class="text-center" @click="goTpcl">Go print</b-button>
+        </b-col>
+
+      </b-row>
+      <b-row>
+        <b-col>
+          <canvas class="mt-3" id="layout" width="640" height="480" style="background-color:silver;border: 1px solid;">
+
+          </canvas>
+
+        </b-col>
+        <b-col>
+          <h2 class="mt-3">変換結果</h2>
+          <pre class="mt-2">{{resultTpcl}}</pre>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col>
+          <h2 class="mt-3">ステータス</h2>
+          <b-button variant="primary" class="text-center" @click="getStatus">ステータス取得</b-button>
+          <h3 class="mt-2">{{statusMessage}}</h3>
+          <pre class="mt-2">{{analizeStatus}}</pre>
+        </b-col>
+      </b-row>
+
+    </b-card>
+  </b-container>
+
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.2.0/ace.js"></script>
+<script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      //jsonPdf: [],
+      upfile: "",
+      resultTpcl: "",
+      analizeStatus: "",
+      statusMessage: "",
+    },
+    methods: {
+      getTpcl: function () {
+        let jsonData = editor.getSession().getValue()
+        return JSON5.parse(jsonData)
+      },
+      goTpcl: async function () {
+        self = this;
+        let url = "http://localhost:8000/tpclmaker";
+
+        jsonObj = this.getTpcl()
+        drawLayout(jsonObj);
+        await axios.post(url, jsonObj)
+          .then(function (response) {
+            console.log(response);
+            self.resultTpcl = response.data.data
+          });
+      },
+      checkLayout: function () {
+        drawLayout(this.getTpcl());
+      },
+      getStatus: async function () {
+        self = this;
+        let url = "/tpclmaker/status";
+        jsonObj = this.getTpcl()
+        await axios.post(url, jsonObj)
+          .then(function (response) {
+            self.analizeStatus = response.data
+            wn = response.data.find(e=>{
+              if (e.command == "WS"){
+                return e
+              }
+            })
+          });
+        if(wn.status in statusCodes){
+          this.statusMessage = statusCodes[wn.status]
+        }else{
+          this.statusMessage = wn.status
+        }
+      }
+    },
+    watch: {
+      upfile: function (newVal, oldVal) {
+        self = this;
+        let reader = new FileReader()
+        reader.readAsText(this.upfile, 'UTF-8')
+        reader.onload = () => {
+          self.jsonPdf = reader.result
+          editor.getSession().setValue(reader.result)
+        }
+      }
+    }
+
+  })
+  var editor = ace.edit("editor");
+  editor.$blockScrolling = Infinity;
+  editor.setTheme("ace/theme/monokai");
+  editor.setFontSize(14);
+  editor.getSession().setMode("ace/mode/json");
+  editor.getSession().setUseWrapMode(true);
+  editor.getSession().setTabSize(2);
+
+</script>
+
+<script>
+  window.onload = function () {
+    drawLayout({});
+  };
+  function cvNumber(str) {
+    return Number(Number(str / 10 * 3.78))
+  }
+
+  function drawLayout(conf) {
+    console.log("jsonData:", conf);
+    if (!Object.keys(conf).length) return;
+
+    const canvas = document.getElementById('layout');  // HTMLCanvasElement
+    const ctx = canvas.getContext('2d');  // CanvasRenderingContext2D
+
+    ctx.lineWidth = 0.3;
+    ctx.font = '10pt sans-serif';
+
+    let xMergin = 0;
+    let yMergin = 0;
+
+    ctx.clearRect(0, 0, 640, 480)
+
+    //Label setting
+    if ('setLabel' in conf) {
+      const sl = conf.setLabel
+      const width = cvNumber(sl.width);
+      const height = cvNumber(sl.height);
+      const pitch = cvNumber(sl.pitch);
+      const base_width = cvNumber("1150");
+
+      //canvas.width = width+40;
+      //canvas.height = height+40;
+
+
+      xMergin = Number((base_width - width) / 2)
+      yMergin = Number((pitch - height) / 2)
+      ctx.strokeStyle = 'green';
+      ctx.strokeRect(xMergin, yMergin, width, height);
+    }
+
+    //PC layout
+    if ('PC' in conf.setFormat) {
+      conf.setFormat.PC.forEach(e => {
+        const x1 = cvNumber(e.x) + xMergin
+        const y1 = cvNumber(e.y) + yMergin
+        const width = 100
+        const height = 10
+        const x2 = x1 + width
+        const y2 = y1 - 20
+        ctx.strokeStyle = 'blue';
+        ctx.strokeRect(x1, y1, width, 0);
+        let field = conf.fields.find(v => {
+          if (v.command == "RC" && v.number === e.number) return v
+        })
+        ctx.fillText("PC" + e.number + "/" + field.bind, x1, y1 - 3);
+      });
+    }
+
+    //XB_QR layout
+    if ('XB_QR' in conf.setFormat) {
+      conf.setFormat.XB_QR.forEach(e => {
+        const x1 = cvNumber(e.x) + xMergin
+        const y1 = cvNumber(e.y) + yMergin
+        const width = 100
+        const height = 10
+        ctx.strokeStyle = 'blue';
+        ctx.strokeRect(x1, y1, width, width);
+        let field = conf.fields.find(v => {
+          if (v.command == "RB" && v.number === e.number) return v
+        })
+        ctx.fillText("XB" + e.number + "/" + field.bind, x1, y1 + 15);
+      });
+    }
+
+    //XB_BAR layout
+    if ('XB_BAR' in conf.setFormat) {
+      conf.setFormat.XB_BAR.forEach(e => {
+        const x1 = cvNumber(e.x) + xMergin
+        const y1 = cvNumber(e.y) + yMergin
+        const width = cvNumber(e.width) * 50
+        const height = cvNumber(e.height)
+        ctx.strokeStyle = 'blue';
+        ctx.strokeRect(x1, y1, width, height);
+        let field = conf.fields.find(v => {
+          if (v.command == "RB" && v.number === e.number) return v
+        })
+        ctx.fillText("XB" + e.number + "/" + field.bind, x1, y1 + 15);
+      });
+    }
+  }
+
+</script>
+
+<script>
+statusCodes = {
+  "00": "ON LINE",
+  "01": "HEAD OPEN",
+  "02": "ON LINE",
+  "04": "PAUSE",
+  "05": "ON LINE",
+  "06": "COMMAND ERROR",
+  "07": "COMMS ERROR",
+  "11": "PAPER JAM",
+  "12": "CUTTER ERROR",
+  "13": "NO PAPER",
+  "14": "NO RIBBON",
+  "15": "HEAD OPEN",
+  "17": "HEAD ERROR",
+  "18": "EXCESS HEAD TEMP",
+  "21": "RIBBON ERROR",
+  "24": "COVER OPEN",
+}
+</script>
+
+</html>

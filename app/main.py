@@ -125,10 +125,24 @@ def read_tests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 
 #------- TPCL process -------
-@app.get("/tpclmaker/",tags=['tpclmaker'])
-async def get_echo(body=Body(...)):
-        return {"message": "Hello tpcl World"}
+@app.get("/tpcledit",
+    tags=['tpclmaker'],
+    summary='Test page for sennd command',
+    description='Test page for sennd command <br/>...............'
+)
+async def test_page():
+    with open("test-tpcl.html",encoding="utf-8") as f:
+        page = f.read()
+    return Response(content=page,media_type="text/html")
 
+@app.post("/tpclmaker/",tags=['tpclmaker'])
+async def get_echo(body=Body(...)):
+    ret = tpcl.tpcl_maker(body)
+    if ret:
+        with open('tpcl_send.log','r',encoding='utf-8') as f:
+            response = f.read()
+            return {"data":response}
+    return {}
 @app.post("/tpclmaker/status",tags=['tpclmaker'])
 async def get_status(body=Body(...)):
         data =  tpcl.analize_status(body)

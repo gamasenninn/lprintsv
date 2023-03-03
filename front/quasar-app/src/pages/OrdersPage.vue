@@ -2,7 +2,6 @@
 <script setup lang="ts">
   import { ref,onMounted } from 'vue'
   import axios from 'axios'
-import internal from 'stream';
 
   const printData = ref([])
   const DEBUG = true
@@ -40,13 +39,13 @@ import internal from 'stream';
 
   const printLabel = async () =>{
     const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
-    alert("now printng.......")
+    alert('now printng.......')
     if(selected.value.length > 0){
       selected.value.forEach( async selData =>{
-        selData.status = "printed"
+        selData.status = 'printed'
         console.log('selected:', selData.scode,selData.id)
         const put_url = `${PRINT_SERVER_URL}${selData.id}`
-        console.log("url:",put_url)
+        console.log('url:',put_url)
         const response = await axios.put(put_url,selData)
       });
     }
