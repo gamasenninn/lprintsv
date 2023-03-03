@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Body,Response
 from sqlalchemy.orm import Session
 
 import crud
@@ -7,6 +8,8 @@ import schemas
 from database import SessionLocal, engine
 
 from fastapi.middleware.cors import CORSMiddleware
+
+import tpcl_maker.tpcl_maker as tpcl
 
 #models.Base.metadata.create_all(bind=engine)
 
@@ -121,3 +124,13 @@ def read_tests(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_tests(db, skip=skip, limit=limit)
 
 
+#------- TPCL process -------
+@app.get("/tpclmaker/",tags=['tpclmaker'])
+async def get_echo(body=Body(...)):
+        return {"message": "Hello tpcl World"}
+
+@app.post("/tpclmaker/status",tags=['tpclmaker'])
+async def get_status(body=Body(...)):
+        data =  tpcl.analize_status(body)
+        return data
+        #return {'status':'OK'}
