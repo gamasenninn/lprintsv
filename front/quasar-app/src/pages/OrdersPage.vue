@@ -47,6 +47,7 @@
         const put_url = `${PRINT_SERVER_URL}${selData.id}`
         console.log('url:',put_url)
         const response = await axios.put(put_url,selData)
+        console.log(response)
       });
     }
     showMessage.value = false
@@ -56,7 +57,7 @@
 
 <template>
   <q-page class="q-pa-md" >
-    <h5 class="q-mt-none">Label Print</h5>
+    <h5 class="q-mt-none">Label Print </h5>
     <q-btn color="primary" label="Refresh" @click="printList"/>
     <q-table 
       title="Lable List" 
