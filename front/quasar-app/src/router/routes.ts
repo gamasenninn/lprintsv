@@ -10,7 +10,8 @@ const routes: RouteRecordRaw[] = [
       { path: '/axios2', component: () => import('pages/AxiosPage2.vue') },
       { path: '/ordersPage', component: () => import('pages/OrdersPage.vue') },
       { path: '/chat', component: () => import('pages/chatGPT.vue') },
-      { path: '/pedit', component: () => import('pages/printScriptEditor.vue') }
+      { path: '/pedit', component: () => import('pages/TestReload.vue') },
+      { path: '/test', component: () => import('pages/TestReload.vue') },
     ],
   },
 

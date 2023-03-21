@@ -132,3 +132,6 @@ dmypy.json
 *.db
 app/migration/versions/
 app/convert/
+front/quasar-app/src/pages/TestReload.vue
+__*.ts
+__*.vue
