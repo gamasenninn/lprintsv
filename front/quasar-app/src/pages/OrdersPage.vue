@@ -2,13 +2,19 @@
 <script setup lang="ts">
   import { ref,onMounted } from 'vue'
   import axios from 'axios'
+  import {get_config} from './print_conf.js'
 
+  const config = get_config()
+  console.log("config",config)
   const printData = ref([])
   const DEBUG = true
   interface Selected{
     scode: string,
     status: string,
-    id: number
+    id: number,
+    title: string,
+    receiptDate: Date,
+    person: string
     //その必要ならば型定義を増やしていくこと
   }
   const selected = ref<Selected[]>([])
@@ -39,14 +45,23 @@
 
   const printLabel = async () =>{
     const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
-    alert('now printng.......')
+    //alert('now printng.......')
     if(selected.value.length > 0){
       selected.value.forEach( async selData =>{
         selData.status = 'printed'
         console.log('selected:', selData.scode,selData.id)
-        const put_url = `${PRINT_SERVER_URL}${selData.id}`
-        console.log('url:',put_url)
-        const response = await axios.put(put_url,selData)
+        console.log('selData:', selData)
+        //const put_url = `${PRINT_SERVER_URL}${selData.id}`
+        //console.log('url:',put_url)
+        //const response = await axios.put(put_url,selData)
+
+        //config.data[0].scode = selData.scode 
+        //config.data[0].title = selData.title
+        //config.data[0].datePerson = `${selData.receiptDate} ${selData.person}`
+        //config.data[0].qrData = 'https://www.google.com/search?q=%E9%A3%9B%E8%A1%8C%E8%88%B9'
+
+        const put_url = 'http://localhost:8000/tpclmaker'
+        const response = await axios.post(put_url, config)
         console.log(response)
       });
     }
