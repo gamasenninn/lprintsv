@@ -12,9 +12,9 @@ const config =  {
   },
   //Initial setting label size
   "setLabel": {
-      "pitch": "0857",
-      "width": "1050",
-      "height": "0805",
+      "pitch": "0820",
+      "width": "1100",
+      "height": "0750",
       "isFeed": "False",
       "censorType": "3", //0-4
       "cutter": "1",

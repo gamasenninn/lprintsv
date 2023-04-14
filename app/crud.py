@@ -80,12 +80,19 @@ def update_order(db: Session, order: schemas.OrderUpdate, id: int):
     db_order = db.query(models.Order).filter(models.Order.id == id).first()
     if db_order:
 
-        db_order.scode=order.scode
-        db_order.title=order.title
-        db_order.receipt_date=order.receipt_date
-        db_order.person=order.person
-        db_order.memo=order.memo
-        db_order.status=order.status
+        #db_order.scode=order.scode
+        #db_order.title=order.title
+        #db_order.receipt_date=order.receipt_date
+        #db_order.person=order.person
+        #db_order.memo=order.memo
+        #db_order.status=order.status
+
+        attributes = ['scode', 'title', 'receipt_date', 'person', 'memo', 'status']
+
+        for attr in attributes:
+            new_value = getattr(order, attr)
+            if new_value is not None:
+                setattr(db_order, attr, new_value)
 
         db.commit()
         db.refresh(db_order)

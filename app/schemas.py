@@ -50,7 +50,12 @@ class OrderCreate(OrderBase):
     pass
 
 class OrderUpdate(OrderBase):
-    pass
+    scode: Optional[str] = None
+    title: Optional[str] = None
+    receipt_date: Optional[date] = None
+    person: Optional[str] = None
+    memo: Optional[str] = None
+    status: Optional[str] = None
 
 class Order(OrderBase):
     id: int

@@ -43,26 +43,31 @@
         {name: 'status',label:'状態' ,field: 'status'},
       ]
 
+  const newConfig = {...config }    
   const printLabel = async () =>{
     const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
     //alert('now printng.......')
     if(selected.value.length > 0){
       selected.value.forEach( async selData =>{
         selData.status = 'printed'
-        console.log('selected:', selData.scode,selData.id)
+        console.log('selected:', selData.scode,selData.id,selData.title)
         console.log('selData:', selData)
         //const put_url = `${PRINT_SERVER_URL}${selData.id}`
         //console.log('url:',put_url)
         //const response = await axios.put(put_url,selData)
 
-        //config.data[0].scode = selData.scode 
-        //config.data[0].title = selData.title
-        //config.data[0].datePerson = `${selData.receiptDate} ${selData.person}`
-        //config.data[0].qrData = 'https://www.google.com/search?q=%E9%A3%9B%E8%A1%8C%E8%88%B9'
+        newConfig.data[0].scode = selData.scode 
+        newConfig.data[0].title = selData.title
+        newConfig.data[0].datePerson = `${selData.receiptDate} ${selData.person}`
+        newConfig.data[0].qrData = 'https://www.google.com/search?q=%E9%A3%9B%E8%A1%8C%E8%88%B9'
 
         const put_url = 'http://localhost:8000/tpclmaker'
-        const response = await axios.post(put_url, config)
+        const response = await axios.post(put_url, newConfig)
         console.log(response)
+        const put_url2 = `http://localhost:8000/orders/${selData.id}`
+        const response2 = await axios.put(put_url2, {status:selData.status})
+        console.log(response2)
+
       });
     }
     showMessage.value = false
