@@ -37,9 +37,12 @@ class OrderBase(BaseModel):
     scode: str
     title: Union[str, None] = None
     receipt_date: Union[datetime.date,None] = None 
+    stock_qty: Union[int,None] = None 
     person: Union[str, None] = None
     memo : Union[str, None] = None
     status : Union[str, None] = None
+    created_at: Union[datetime.datetime,None] = None
+    updated_at: Union[datetime.datetime,None] = None
 
     class Config:
         alias_generator = stringcase.camelcase
@@ -60,8 +63,8 @@ class OrderUpdate(OrderBase):
 class Order(OrderBase):
     id: int
     owner_id: int
-    created_at: datetime.datetime
-    updated_at: datetime.datetime
+    #created_at: datetime.datetime
+    #updated_at: datetime.datetime
     owner: Union[UserRef,None]
 
     class Config:

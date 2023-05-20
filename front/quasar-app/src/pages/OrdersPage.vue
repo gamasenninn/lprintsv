@@ -5,9 +5,11 @@
   import {get_config} from './print_conf.js'
 
   const config = get_config()
-  console.log("config",config)
+  console.log('config',config)
   const printData = ref([])
-  const DEBUG = true
+  const skipText = ref('0')
+  const gteText = ref('1')
+  const DEBUG = false
   interface Selected{
     scode: string,
     status: string,
@@ -19,14 +21,19 @@
   }
   const selected = ref<Selected[]>([])
   const showMessage = ref(false)
+  const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
+  const QR_URL:string|undefined = process.env.QR_URL
+
 
   const printList = async ()=>{
-    const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
+    //const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
     if (PRINT_SERVER_URL === undefined) {
       console.warn('PRINT_SERVER_URL is not defined')
       return
     }
-    const response = await axios.get(PRINT_SERVER_URL)
+    const skip = skipText.value
+    const gte = gteText.value
+    const response = await axios.get(`${PRINT_SERVER_URL}/orders?skip=${skip}&gte=${gte}`)
     printData.value = response.data
   }
 
@@ -38,6 +45,7 @@
         {name: 'scode',label:'仕切No' ,field:'scode',sortable:true},
         {name: 'title',label:'タイトル' ,field:'title'},
         {name: 'receiptDate',label:'日付' ,field:'receiptDate'},
+        {name: 'stockQty',label:'在庫数' ,field:'stockQty'},
         {name: 'person',label:'担当' ,field:'person'},
         {name: 'ownwer',label:'発行者' ,field: row=>row.owner.name},
         {name: 'status',label:'状態' ,field: 'status'},
@@ -45,30 +53,32 @@
 
   const newConfig = {...config }    
   const printLabel = async () =>{
-    const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
-    //alert('now printng.......')
     if(selected.value.length > 0){
-      selected.value.forEach( async selData =>{
+      selected.value.forEach( async (selData,i) =>{
         selData.status = 'printed'
         console.log('selected:', selData.scode,selData.id,selData.title)
         console.log('selData:', selData)
-        //const put_url = `${PRINT_SERVER_URL}${selData.id}`
-        //console.log('url:',put_url)
-        //const response = await axios.put(put_url,selData)
+        if(i >= newConfig.data.length) {
+          newConfig.data.push({});
+        }
 
-        newConfig.data[0].scode = selData.scode 
-        newConfig.data[0].title = selData.title
-        newConfig.data[0].datePerson = `${selData.receiptDate} ${selData.person}`
-        newConfig.data[0].qrData = 'https://www.google.com/search?q=%E9%A3%9B%E8%A1%8C%E8%88%B9'
-
-        const put_url = 'http://localhost:8000/tpclmaker'
-        const response = await axios.post(put_url, newConfig)
-        console.log(response)
-        const put_url2 = `http://localhost:8000/orders/${selData.id}`
-        const response2 = await axios.put(put_url2, {status:selData.status})
-        console.log(response2)
+        newConfig.data[i].scode = selData.scode 
+        newConfig.data[i].title = selData.title
+        newConfig.data[i].datePerson = `${selData.receiptDate} ${selData.person}`
+        newConfig.data[i].qrData = `${QR_URL}?scode=${selData.scode}`
 
       });
+      const put_url = `${PRINT_SERVER_URL}/tpclmaker`
+      const response = await axios.post(put_url, newConfig)
+      console.log(response)
+      // Status 更新
+      if (response.status == 200){
+        selected.value.forEach( async selData =>{
+          const put_url2 = `${PRINT_SERVER_URL}/orders/${selData.id}`
+          const response2 = await axios.put(put_url2, {status:selData.status})
+          console.log(response2)
+        })
+      }
     }
     showMessage.value = false
   }
@@ -78,7 +88,21 @@
 <template>
   <q-page class="q-pa-md" >
     <h5 class="q-mt-none">Label Print </h5>
-    <q-btn color="primary" label="Refresh" @click="printList"/>
+    <div class="q-pa-md">
+      <div class="row">
+        <div class="col">
+          <q-btn color="primary" label="Refresh" @click="printList"/>
+        </div>
+        <div class="col">
+          <q-input v-model="skipText" label="Skip Value(Offset)" />
+        </div>
+        <div class="col">
+          <q-input v-model="gteText" label="stock qty >=" />
+        </div>
+        <div class="col-5">
+        </div>
+      </div>
+    </div>
     <q-table 
       title="Lable List" 
       :rows="printData" 

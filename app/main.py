@@ -101,9 +101,9 @@ def delete_order(
 
 
 @app.get("/orders/", response_model=list[schemas.Order])
-def read_orders(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def read_orders(skip: int = 0, limit: int = 100, gte: int = 0 ,db: Session = Depends(get_db)):
 
-    db_orders = crud.get_orders(db, skip=skip, limit=limit)
+    db_orders = crud.get_orders(db, skip=skip, limit=limit, gte=gte)
     #if db_orders is None:
     #    raise HTTPException(status_code=404, detail="User not found")   
     return db_orders

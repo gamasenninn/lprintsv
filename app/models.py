@@ -37,6 +37,7 @@ class Order(Base):
     scode = Column(String, index=True)
     title = Column(String)
     receipt_date = Column(Date,default=None)
+    stock_qty = Column(Integer,default=0)
     person = Column(String)
     memo = Column(String)
     status = Column(String)

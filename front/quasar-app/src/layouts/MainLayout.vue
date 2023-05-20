@@ -101,10 +101,22 @@ const linksList = [
     link: 'http://localhost:8000/tpcledit'
   },
   {
+    title: 'otsuka shokai',
+    caption: 'Home otsuka shokai',
+    icon: 'school',
+    link: 'https://www.otsuka-shokai.co.jp/'
+  },
+  {
     title: 'Docs',
     caption: 'quasar.dev',
     icon: 'school',
     link: 'https://quasar.dev'
+  },
+  {
+    title: 'Github',
+    caption: 'github.com/gamasenninn/lprintsv',
+    icon: 'code',
+    link: 'https://github.com/gamasenninn/lprintsv'
   },
   {
     title: 'Github',
