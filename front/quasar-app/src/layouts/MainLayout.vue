@@ -73,18 +73,18 @@ const localLinksList = [
     icon: 'print',
     link: '/pedit'
   },
-  {
-    title: 'Github users',
-    caption: 'test for axuis  ......',
-    icon: 'code',
-    link: '/axios2'
-  },
-  {
-    title: 'GPT TEST',
-    caption: 'GPT-3 API test  ......',
-    icon: 'code',
-    link: '/chat'
-  },
+  //{
+  //  title: 'Github users',
+  //  caption: 'test for axuis  ......',
+  //  icon: 'code',
+  //  link: '/axios2'
+  //},
+  //{
+  //  title: 'GPT TEST',
+  //  caption: 'GPT-3 API test  ......',
+  //  icon: 'code',
+  //  link: '/chat'
+  //},
 ]
 
 const linksList = [
@@ -100,12 +100,12 @@ const linksList = [
     icon: 'school',
     link: 'http://localhost:8000/tpcledit'
   },
-  {
-    title: 'otsuka shokai',
-    caption: 'Home otsuka shokai',
-    icon: 'school',
-    link: 'https://www.otsuka-shokai.co.jp/'
-  },
+  //{
+  //  title: 'otsuka shokai',
+  //  caption: 'Home otsuka shokai',
+  //  icon: 'school',
+  //  link: 'https://www.otsuka-shokai.co.jp/'
+  //},
   {
     title: 'Docs',
     caption: 'quasar.dev',
@@ -113,13 +113,13 @@ const linksList = [
     link: 'https://quasar.dev'
   },
   {
-    title: 'Github',
+    title: 'Github-lprintsv',
     caption: 'github.com/gamasenninn/lprintsv',
     icon: 'code',
     link: 'https://github.com/gamasenninn/lprintsv'
   },
   {
-    title: 'Github',
+    title: 'Github-quasar',
     caption: 'github.com/quasarframework',
     icon: 'code',
     link: 'https://github.com/quasarframework'

@@ -9,6 +9,8 @@
   const printData = ref([])
   const skipText = ref('0')
   const gteText = ref('1')
+  const scodeText = ref('')
+  const statusSyncDb = ref(false)
   const DEBUG = false
   interface Selected{
     scode: string,
@@ -21,6 +23,7 @@
   }
   const selected = ref<Selected[]>([])
   const showMessage = ref(false)
+  const showSyncDbMessage = ref(false)
   const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
   const QR_URL:string|undefined = process.env.QR_URL
 
@@ -33,7 +36,8 @@
     }
     const skip = skipText.value
     const gte = gteText.value
-    const response = await axios.get(`${PRINT_SERVER_URL}/orders?skip=${skip}&gte=${gte}`)
+    const scode = scodeText.value
+    const response = await axios.get(`${PRINT_SERVER_URL}/orders?skip=${skip}&gte=${gte}&scode=${scode}`)
     printData.value = response.data
   }
 
@@ -82,6 +86,15 @@
     }
     showMessage.value = false
   }
+  const syncDataBase = async () =>{
+    statusSyncDb.value = true
+    console.log("Sync DB start......")
+    const put_url = `${PRINT_SERVER_URL}/convert/fromDB`
+    const response = await axios.post(put_url,"test")
+    statusSyncDb.value = false
+    showSyncDbMessage.value = false
+
+  }
 
 </script>
 
@@ -98,6 +111,9 @@
         </div>
         <div class="col">
           <q-input v-model="gteText" label="stock qty >=" />
+        </div>
+        <div class="col">
+          <q-input v-model="scodeText" label="scode(contain)"  stack-label/>
         </div>
         <div class="col-5">
         </div>
@@ -128,6 +144,22 @@
         </q-card-actions>
       </q-card>
     </q-dialog> 
+    <q-btn color="primary" class = "q-mt-md q-ml-md" label="Sync DataBase" @click="showSyncDbMessage=true"/>
+    <q-spinner-audio v-if="statusSyncDb" class = "q-mt-md" color="primary" size="2em" />
+    <q-dialog v-model="showSyncDbMessage">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Alert</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          データベースを同期します。
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="OK" color="primary"  @click="syncDataBase" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog> 
+
     <div v-if="DEBUG">
       <div>
         {{ selected }}

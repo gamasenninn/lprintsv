@@ -1,15 +1,13 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi import Body,Response
 from sqlalchemy.orm import Session
-
 import crud
 import models
 import schemas
 from database import SessionLocal, engine
-
 from fastapi.middleware.cors import CORSMiddleware
-
 import tpcl_maker.tpcl_maker as tpcl
+from convert.load_mysql_orm_view import convert_db
 
 #models.Base.metadata.create_all(bind=engine)
 
@@ -101,9 +99,9 @@ def delete_order(
 
 
 @app.get("/orders/", response_model=list[schemas.Order])
-def read_orders(skip: int = 0, limit: int = 100, gte: int = 0 ,db: Session = Depends(get_db)):
+def read_orders(skip: int = 0, limit: int = 100, gte: int = 0 ,scode: str = '' ,db: Session = Depends(get_db)):
 
-    db_orders = crud.get_orders(db, skip=skip, limit=limit, gte=gte)
+    db_orders = crud.get_orders(db, skip=skip, limit=limit, gte=gte, scode=scode)
     #if db_orders is None:
     #    raise HTTPException(status_code=404, detail="User not found")   
     return db_orders
@@ -148,3 +146,13 @@ async def get_status(body=Body(...)):
         data =  tpcl.analize_status(body)
         return data
         #return {'status':'OK'}
+
+#-------- convert process --------
+@app.post("/convert/fromDB",tags=['convert DB'])
+async def convert_from_masterDB(body=Body(...)):
+        data =  convert_db()
+        return data
+        #return {'status':'OK'}
+
+#if __name__ == "__main__":
+#    uvicorn.run(app, host="0.0.0.0", port=8000)
