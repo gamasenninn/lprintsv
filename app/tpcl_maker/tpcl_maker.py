@@ -1,11 +1,15 @@
 from jsonc_parser.parser import JsoncParser
 import socket
 import sys
+import datetime
+import time
 
 # --- config value ------
 IS_SEND = False
 IS_LOG = True
 LOG_FILE_PATH = "tpcl_send.log"
+RECV_LOG_FILE_PATH = "tpcl_recv.log"
+LOG_FILE_ENCODING = "utf-8"
 SOCKET_TIME_OUT = 5
 
 # ----- error code -----
@@ -13,9 +17,22 @@ ERR_SOCKET_TIME_OUT = -101
 ERR_CNNECTION_REFUSED = -102
 ERR_RECIEVE_TIME_OUT = -103
 
+# ----ロギング -----
+def write_log(log_message, log_file_path):
+    current_time = datetime.datetime.now()
+    log_entry = f"[{current_time}] {log_message}\n"
+
+    with open(log_file_path, "a",encoding=LOG_FILE_ENCODING) as log_file:
+        log_file.write(log_entry)
+
+def write_send_log(log_message):
+    write_log(log_message, LOG_FILE_PATH)
+
+def write_recv_log(log_message):
+    write_log(log_message, RECV_LOG_FILE_PATH)
+
+
 # ----コマンド送信 -----
-
-
 def ssend(com_str, socket, prt_encoding='cp932'):
     # print(com_str)
     b_com = b'\x1b' + com_str.encode(prt_encoding) + b'\x0a\x00'
@@ -23,9 +40,10 @@ def ssend(com_str, socket, prt_encoding='cp932'):
     if IS_SEND:
         socket.send(b_com)
     if IS_LOG:
-        encoding = 'utf-8'
-        with open(LOG_FILE_PATH, 'a', encoding=encoding) as f:                # ファイルを開く (encoding 注意)
-            f.write(com_str+"\n")
+        write_send_log(com_str)
+        #encoding = 'utf-8'
+        #with open(LOG_FILE_PATH, 'a', encoding=encoding) as f:                # ファイルを開く (encoding 注意)
+        #    f.write(com_str+"\n")
 
 
 def ssend_recv(com_str, socket, prt_encoding='cp932'):
@@ -38,8 +56,12 @@ def ssend_recv(com_str, socket, prt_encoding='cp932'):
 
     if IS_LOG:
         encoding = 'utf-8'
-        with open(LOG_FILE_PATH, 'a', encoding=encoding) as f:                # ファイルを開く (encoding 注意)
-            f.write(com_str+"\n")
+        write_send_log(com_str)
+        write_recv_log(com_str)
+        write_recv_log(data)
+
+        #with open(LOG_FILE_PATH, 'a', encoding=encoding) as f:                # ファイルを開く (encoding 注意)
+        #    f.write(com_str+"\n")
 
     return data
 
@@ -209,11 +231,20 @@ def send_tcpl_all(conf, sock):
                 command = f"XS;I,{f['copies']},{f['cutInterval']}{f['censorType']}{f['mode']}{f['speed']}{f['ribbon']}{f['tagRotation']}{f['statusResponse']}"
                 ssend(command, sock)
             elif f['command'] == "@12":
-                command = f"@012;w,T24,U0={bind_v}"
+                command = f"@012;w,T24,V1,U0={bind_v}" #RFIDへの書き込み
                 #ssend(command, sock)
                 print(command)
-                ret = ssend_recv(command, sock)
-                print("recv data:",ret)
+                for i in range(3): #最大3回リトライ
+                    ret = ssend_recv(command, sock)
+                    print("@12 recv data:",ret)
+                    if ret[2:5] ==b'635':
+                        break
+                    time.sleep(1)
+                    print(f"エラーリトライ:{i}")
+                #command = f"WF" #RFIDを読み込む
+                #ret = ssend_recv(command, sock)
+                #print("WF recv data:",ret)
+
     # final
     finals = conf['final']
     for fin in finals:
@@ -224,10 +255,6 @@ def send_tcpl_all(conf, sock):
 
 
 def tpcl_maker(conf):
-    if IS_LOG:
-        encoding = 'utf-8'
-        with open(LOG_FILE_PATH, 'w', encoding=encoding) as f:                # ファイルを開く (encoding 注意)
-            pass
 
     # --- printer IP ----
     ip = conf['device']['ip']

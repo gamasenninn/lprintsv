@@ -92,13 +92,13 @@ const linksList = [
     title: 'swagger',
     caption: 'API DOCS',
     icon: 'school',
-    link: 'http://localhost:8000/docs'
+    link: 'http://ymain2:8000/docs'
   },
   {
     title: 'tpcl editor',
     caption: 'TPCL script maker',
     icon: 'school',
-    link: 'http://localhost:8000/tpcledit'
+    link: 'http://ymain2:8000/tpcledit'
   },
   //{
   //  title: 'otsuka shokai',

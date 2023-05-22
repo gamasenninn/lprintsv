@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi import Body,Response
 from sqlalchemy.orm import Session
 import crud
@@ -28,6 +29,18 @@ def get_db():
     finally:
         db.close()
 
+
+@app.get("/")
+async def index():
+    return FileResponse("../front/quasar-app/dist/spa/index.html")
+
+@app.get("/slog")
+async def send_log_view():
+    return FileResponse("./tpcl_send.log")
+
+@app.get("/rlog")
+async def recv_log_view():
+    return FileResponse("./tpcl_recv.log")
 
 #------ user API -------
 @app.post("/users/", response_model=schemas.User)

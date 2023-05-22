@@ -43,6 +43,7 @@
 
   onMounted(() => {
     printList()
+    console.log("ENV:",PRINT_SERVER_URL,QR_URL)
   })
 
   const columns=[
@@ -69,7 +70,9 @@
         newConfig.data[i].scode = selData.scode 
         newConfig.data[i].title = selData.title
         newConfig.data[i].datePerson = `${selData.receiptDate} ${selData.person}`
-        newConfig.data[i].qrData = `${QR_URL}?scode=${selData.scode}`
+        //const QR_URL = "http://hikousen-rs.com/shikiri"
+        newConfig.data[i].qrData = `${QR_URL}?skey=${selData.scode}`
+        console.log("QR:",newConfig.data[i].qrData)
 
       });
       const put_url = `${PRINT_SERVER_URL}/tpclmaker`

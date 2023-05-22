@@ -14,7 +14,7 @@ const config =
         //Initial setting label size
         "setLabel": {
             "pitch": "0857",
-            "width": "1050",
+            "width": "1150",
             "height": "0805",
             "isFeed": "False",
             "censorType": "3", //0-4

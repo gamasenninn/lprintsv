@@ -1,5 +1,5 @@
 #from ast import alias
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Date,DateTime,DATETIME,FetchedValue
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float,Date,DateTime,DATETIME,FetchedValue
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -42,6 +42,11 @@ class Order(Base):
     memo = Column(String)
     status = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
+    place = Column(String)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    check_category = Column(String)
+    check_date = Column(DATETIME, default=datetime.now)
     created_at = Column(DATETIME, default=datetime.now)
     updated_at = Column(DATETIME, default=datetime.now, onupdate=datetime.now)
 
