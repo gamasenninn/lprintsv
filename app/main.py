@@ -9,6 +9,7 @@ from database import SessionLocal, engine
 from fastapi.middleware.cors import CORSMiddleware
 import tpcl_maker.tpcl_maker as tpcl
 from convert.load_mysql_orm_view import convert_db
+from convert.load_web import update_location
 
 #models.Base.metadata.create_all(bind=engine)
 
@@ -112,9 +113,14 @@ def delete_order(
 
 
 @app.get("/orders/", response_model=list[schemas.Order])
-def read_orders(skip: int = 0, limit: int = 100, gte: int = 0 ,scode: str = '' ,db: Session = Depends(get_db)):
+def read_orders(skip: int = 0, 
+                limit: int = 100, 
+                gte: int = 0 ,
+                scode: str = '' ,
+                place: str = '',
+                db: Session = Depends(get_db)):
 
-    db_orders = crud.get_orders(db, skip=skip, limit=limit, gte=gte, scode=scode)
+    db_orders = crud.get_orders(db, skip=skip, limit=limit, gte=gte, scode=scode,place=place)
     #if db_orders is None:
     #    raise HTTPException(status_code=404, detail="User not found")   
     return db_orders
@@ -165,7 +171,12 @@ async def get_status(body=Body(...)):
 async def convert_from_masterDB(body=Body(...)):
         data =  convert_db()
         return data
-        #return {'status':'OK'}
+
+@app.post("/convert/update_location",tags=['convert DB'])
+async def update_location_from_web(body=Body(...)):
+        data =  update_location()
+        return data
+
 
 #if __name__ == "__main__":
 #    uvicorn.run(app, host="0.0.0.0", port=8000)

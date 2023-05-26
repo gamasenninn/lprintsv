@@ -70,7 +70,7 @@ const localLinksList = [
   {
     title: 'Print Script Editot',
     caption: 'Edit for print script ......',
-    icon: 'print',
+    icon: 'edit',
     link: '/pedit'
   },
   //{
@@ -91,14 +91,26 @@ const linksList = [
   {
     title: 'swagger',
     caption: 'API DOCS',
-    icon: 'school',
+    icon: 'api',
     link: 'http://ymain2:8000/docs'
   },
   {
     title: 'tpcl editor',
     caption: 'TPCL script maker',
-    icon: 'school',
+    icon: 'edit',
     link: 'http://ymain2:8000/tpcledit'
+  },
+  {
+    title: 'Send Log viwer',
+    caption: 'Send log ......',
+    icon: 'article',
+    link: 'http://ymain2:8000/slog'
+  },
+  {
+    title: 'Recive Log viwer',
+    caption: 'recieve log ......',
+    icon: 'article',
+    link: 'http://ymain2:8000/rlog'
   },
   //{
   //  title: 'otsuka shokai',

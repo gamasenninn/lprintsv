@@ -41,6 +41,7 @@ class OrderBase(BaseModel):
     person: Union[str, None] = None
     memo : Union[str, None] = None
     status : Union[str, None] = None
+    place : Union[str, None] = None
     created_at: Union[datetime.datetime,None] = None
     updated_at: Union[datetime.datetime,None] = None
 

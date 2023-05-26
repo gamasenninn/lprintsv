@@ -64,14 +64,27 @@ def get_tests(db: Session, skip: int = 0, limit: int = 100):
 
 #--- Order API -------
 
-def get_orders(db: Session, skip: int = 0, limit: int = 100, gte: int = 0,scode: str=''):
-    return (
-        db.query(models.Order)
-        .filter(models.Order.stock_qty >= gte)
-        .filter(models.Order.scode.contains(scode))
-        .order_by(desc(models.Order.id))
-        .offset(skip).limit(limit)
-        .all())
+def get_orders(db: Session, skip: int = 0, limit: int = 100, gte: int = 0,scode: str='',place=''):
+
+    if place:
+        return (
+            db.query(models.Order)
+            .filter(models.Order.stock_qty >= gte)
+            .filter(models.Order.scode.contains(scode))
+            .filter(models.Order.place.contains(place))
+            .order_by(desc(models.Order.id))
+            .offset(skip).limit(limit)
+            .all())
+    else:
+        return (
+            db.query(models.Order)
+            .filter(models.Order.stock_qty >= gte)
+            .filter(models.Order.scode.contains(scode))
+            .order_by(desc(models.Order.id))
+            .offset(skip).limit(limit)
+            .all())
+
+
 
 def get_orders_by_id(db: Session, order_id: int):
     return db.query(models.Order).filter(models.Order.id == order_id).first()

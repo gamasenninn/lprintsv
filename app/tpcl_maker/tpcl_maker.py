@@ -231,19 +231,29 @@ def send_tcpl_all(conf, sock):
                 command = f"XS;I,{f['copies']},{f['cutInterval']}{f['censorType']}{f['mode']}{f['speed']}{f['ribbon']}{f['tagRotation']}{f['statusResponse']}"
                 ssend(command, sock)
             elif f['command'] == "@12":
-                command = f"@012;w,T24,V1,U0={bind_v}" #RFIDへの書き込み
                 #ssend(command, sock)
-                print(command)
-                for i in range(3): #最大3回リトライ
+                for wf_count in range(3):
+                    for i in range(3): #最大3回リトライ
+                        command = f"@012;w,T24,V1,U0={bind_v}" #RFIDへの書き込み
+                        print(command)
+                        ret = ssend_recv(command, sock)
+                        if ret[2:5] ==b'635':
+                            break
+                        time.sleep(1)
+                        print(f"エラーリトライ:{i}")
+                        write_send_log(f"エラーリトライ:{i}")
+                    command = f"WF;I2,U1" #RFIDを読み込む
                     ret = ssend_recv(command, sock)
-                    print("@12 recv data:",ret)
-                    if ret[2:5] ==b'635':
+                    if bind_v.encode() in ret:
+                        write_recv_log(f"送信コードが一致しました({bind_v})")
                         break
-                    time.sleep(1)
-                    print(f"エラーリトライ:{i}")
-                #command = f"WF" #RFIDを読み込む
-                #ret = ssend_recv(command, sock)
-                #print("WF recv data:",ret)
+                    else:
+                        print(f"ERROR!.....送信コードが一致しません({bind_v}...リトライ{wf_count})")
+                        write_recv_log(f"ERROR!.....送信コードが一致しません({bind_v}...リトライ{wf_count})")
+                else:
+                    command = f"RC001;----------" 
+                    ssend(command, sock)
+
 
     # final
     finals = conf['final']
