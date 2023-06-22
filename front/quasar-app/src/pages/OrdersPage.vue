@@ -31,9 +31,10 @@
   const showMessage = ref(false)
   const showSyncDbMessage = ref(false)
   const showSyncLocationMessage = ref(false)
-  const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
-  const QR_URL:string|undefined = process.env.QR_URL
-
+  //const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
+  //const QR_URL:string|undefined = process.env.QR_URL
+  const PRINT_SERVER_URL:string|undefined = 'http://ymain2:8000'
+  const QR_URL:string|undefined = 'https://hikousen-rs.com/close'
 
   const printList = async ()=>{
     //const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL

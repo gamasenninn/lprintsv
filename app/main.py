@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi import Body,Response
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 import crud
 import models
@@ -30,10 +31,16 @@ def get_db():
     finally:
         db.close()
 
+#app.mount("/", StaticFiles(directory="../front/quasar-app/dist/spa"), name="static")
+# Quasarアプリケーションのビルド結果を提供するための設定
+#app.mount("/spa", StaticFiles(directory="./spa"), name="static")
+# Quasarアプリケーションのindex.htmlを提供する
 
-@app.get("/")
-async def index():
-    return FileResponse("../front/quasar-app/dist/spa/index.html")
+
+@app.get("/home")
+async def home():
+#    return FileResponse("../front/quasar-app/dist/spa/index.html")
+    return "hello"
 
 @app.get("/slog")
 async def send_log_view():
@@ -155,10 +162,10 @@ async def test_page():
 @app.post("/tpclmaker/",tags=['tpclmaker'])
 async def get_echo(body=Body(...)):
     ret = tpcl.tpcl_maker(body)
-    if ret:
-        with open('tpcl_send.log','r',encoding='utf-8') as f:
-            response = f.read()
-            return {"data":response}
+    #if ret:
+    #    with open('tpcl_send.log','r',encoding='utf-8') as f:
+    #        response = f.read()
+    #        return {"data":response}
     return {}
 @app.post("/tpclmaker/status",tags=['tpclmaker'])
 async def get_status(body=Body(...)):
@@ -176,6 +183,15 @@ async def convert_from_masterDB(body=Body(...)):
 async def update_location_from_web(body=Body(...)):
         data =  update_location()
         return data
+
+#@app.get("/")
+#async def index():
+#    return FileResponse("./spa/index.html")
+#    #return "hello"
+
+#@app.get("/{full_path:path}")
+#async def serve_static_file(full_path: str):
+#    return FileResponse("./spa/" + full_path)
 
 
 #if __name__ == "__main__":
