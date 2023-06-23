@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import tpcl_maker.tpcl_maker as tpcl
 from convert.load_mysql_orm_view import convert_db
 from convert.load_web import update_location
+from collections import deque
 
 #models.Base.metadata.create_all(bind=engine)
 
@@ -42,13 +43,20 @@ async def home():
 #    return FileResponse("../front/quasar-app/dist/spa/index.html")
     return "hello"
 
+def tail(file_path,n=300):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return deque(f, n)    
+
 @app.get("/slog")
 async def send_log_view():
-    return FileResponse("./tpcl_send.log")
+    #return FileResponse("./tpcl_send.log")
+    return tail("./tpcl_send.log")
 
 @app.get("/rlog")
 async def recv_log_view():
-    return FileResponse("./tpcl_recv.log")
+#    return FileResponse("./tpcl_recv.log")
+    return tail("./tpcl_recv.log")
+
 
 #------ user API -------
 @app.post("/users/", response_model=schemas.User)
