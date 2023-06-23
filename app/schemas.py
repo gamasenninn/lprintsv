@@ -96,7 +96,7 @@ class User(UserBase):
     created_at: datetime.datetime
     updated_at: datetime.datetime
     items: list[Item] = []
-    orders: list[Order] = []
+    #orders: list[Order] = []
 
     class Config:
         orm_mode = True
