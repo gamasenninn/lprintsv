@@ -1,0 +1,18 @@
+version: '3'
+services:
+  lprint_server:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "8000:80" # FastAPIアプリケーションのデフォルトポートは8000。外部からは80ポートでアクセスできるようにする
+    volumes:
+      - ./app:/app # ホストのappディレクトリをコンテナの/appディレクトリにマウント
+  lprint_front:
+    build:
+      context: ./front/quasar-app
+      dockerfile: Dockerfile
+    ports:
+      - "8090:80" # Nginxを外部からアクセス可能にする
+    volumes:
+      - ./front/quasar-app/dist/spa:/usr/share/nginx/html # ホストのfront/srcディレクトリをコンテナの/usr/share/nginx/htmlディレクトリにマウント
