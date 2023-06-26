@@ -102,19 +102,19 @@ class User(UserBase):
         orm_mode = True
 
 #---- Test
-class TestBase(BaseModel):
-    name: str = Field(alias="aname")
+#class TestBase(BaseModel):
+#    name: str = Field(alias="aname")
 
 
-class Test(TestBase):
-    id: int
-    日本語名前: str  # = Field(alias="日本語名前")
-    日本語住所: str  # = Field(alias="日本語住所")
+#class Test(TestBase):
+#    id: int
+#    日本語名前: str  # = Field(alias="日本語名前")
+#    日本語住所: str  # = Field(alias="日本語住所")
 
     #日本語名前: str  # = Field(alias="日本語名前")
     #日本語住所: str  # = Field(alias="日本語住所")
 
-    class Config:
-        orm_mode = True
+#    class Config:
+#        orm_mode = True
 
 
