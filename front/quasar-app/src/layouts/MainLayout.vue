@@ -58,14 +58,22 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
-import LocalLink from 'src/components/LocalLink.vue';
+import LocalLink from 'components/LocalLink.vue';
+const PRINT_SERVER_URL:string|undefined = process.env.PRINT_SERVER_URL
+
 
 const localLinksList = [
   {
     title: 'Label Print',
-    caption: 'check & printing ......',
+    caption: 'check & printing.',
     icon: 'print',
     link: '/ordersPage'
+  },
+  {
+    title: 'Log Viewer',
+    caption: 'view log gada.',
+    icon: 'article',
+    link: '/logViewer'
   },
   {
     title: 'Print Script Editot',
@@ -73,18 +81,6 @@ const localLinksList = [
     icon: 'edit',
     link: '/pedit'
   },
-  //{
-  //  title: 'Github users',
-  //  caption: 'test for axuis  ......',
-  //  icon: 'code',
-  //  link: '/axios2'
-  //},
-  //{
-  //  title: 'GPT TEST',
-  //  caption: 'GPT-3 API test  ......',
-  //  icon: 'code',
-  //  link: '/chat'
-  //},
 ]
 
 const linksList = [
@@ -92,32 +88,14 @@ const linksList = [
     title: 'swagger',
     caption: 'API DOCS',
     icon: 'api',
-    link: 'http://ymain2:8000/docs'
+    link: PRINT_SERVER_URL+'/docs'
   },
   {
     title: 'tpcl editor',
     caption: 'TPCL script maker',
     icon: 'edit',
-    link: 'http://ymain2:8000/tpcledit'
+    link: PRINT_SERVER_URL+'/tpcledit'
   },
-  {
-    title: 'Send Log viwer',
-    caption: 'Send log ......',
-    icon: 'article',
-    link: 'http://ymain2:8000/slog'
-  },
-  {
-    title: 'Recive Log viwer',
-    caption: 'recieve log ......',
-    icon: 'article',
-    link: 'http://ymain2:8000/rlog'
-  },
-  //{
-  //  title: 'otsuka shokai',
-  //  caption: 'Home otsuka shokai',
-  //  icon: 'school',
-  //  link: 'https://www.otsuka-shokai.co.jp/'
-  //},
   {
     title: 'Docs',
     caption: 'quasar.dev',

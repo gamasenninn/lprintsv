@@ -12,6 +12,7 @@ const routes: RouteRecordRaw[] = [
       { path: '/chat', component: () => import('pages/chatGPT.vue') },
       { path: '/pedit', component: () => import('pages/TestReload.vue') },
       { path: '/test', component: () => import('pages/TestReload.vue') },
+      { path: '/logViewer', component: () => import('pages/LogViewer.vue') },
     ],
   },
 
