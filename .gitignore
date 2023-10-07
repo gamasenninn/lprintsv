@@ -131,7 +131,8 @@ dmypy.json
 # any ignored
 *.db
 app/migration/versions/
-app/convert/
+app/convert/*
+!convert/upload_web_scode.py
 front/quasar-app/src/pages/TestReload.vue
 __*.ts
 __*.vue
