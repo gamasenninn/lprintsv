@@ -265,9 +265,12 @@ def upload_in_chunks(df_payload, start_index=0, chunk_size=50):
 
 def main():
     # コマンドライン引数の設定
-    parser = argparse.ArgumentParser(description='RFID アップロードスクリプト')
-    parser.add_argument('--noup', action='store_true', help='アップロードしない場合にこのフラグを指定')
-    args = parser.parse_args()
+    try:
+        parser = argparse.ArgumentParser(description='RFID アップロードスクリプト')
+        parser.add_argument('--noup', action='store_true', help='アップロードしない場合にこのフラグを指定')
+        args = parser.parse_args()
+    except SystemExit:
+        return
 
     # 棚卸し日を指定する、指定した日付を棚卸日stock_date_timeとしておく
     stock_date_time = get_stock_date()
@@ -304,8 +307,6 @@ def main():
         product   = check_stock(row['scode'])
         df_new.loc[idx, 'master_qty'] = product.stock_qty if product else -999
         df_new.loc[idx, 'master_memo'] = product.memo if product else ""
-        #current_title = df_new.loc[idx, 'title']
-        #print(idx,current_title)
         if pd.isna(row['title']) or not row['title']:
             df_new.loc[idx, 'title'] = product.pname if product else ""
     df_new.to_csv("tana_scode.csv",encoding="cp932") #デバッグのためのCSV保存
@@ -320,7 +321,7 @@ def main():
     # 50行ごとにDataFrameを分割して処理
     # start_indexがあることで、エラーがあった場合、データの開始位置を指定してそのデータから処理を続けられるようにできる。
     print("対象追加数: ",len(df_payload))
-    #upload_in_chunks(df_payload,start_index=0,chunk_size=50)
+
     if not args.noup:
         upload_in_chunks(df_payload, start_index=0, chunk_size=50)
         print("アップロード終了しました。")
@@ -328,7 +329,5 @@ def main():
         print("アップロードはスキップされました。")
 
 if __name__ == "__main__":
-    try:
-        main()
-    except SystemExit:
-        pass  # SystemExit例外が発生しても何もしない
+    
+    main()
