@@ -263,8 +263,7 @@ def upload_in_chunks(df_payload, start_index=0, chunk_size=50):
             break
 
 
-if __name__ == "__main__":
-
+def main():
     # コマンドライン引数の設定
     parser = argparse.ArgumentParser(description='RFID アップロードスクリプト')
     parser.add_argument('--noup', action='store_true', help='アップロードしない場合にこのフラグを指定')
@@ -288,6 +287,10 @@ if __name__ == "__main__":
         #print(filetag,scode)      
         new_row = {'scode': scode, 'place': filetag,'create_date': ''}
         df_tana = df_tana.append(new_row, ignore_index=True)
+    if df_tana.empty:
+        print("タグデータが存在しません。処理を終了します。")
+        return
+
     stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
     df_tana['create_date'] = stock_date_time_str
 
@@ -324,3 +327,5 @@ if __name__ == "__main__":
     else:
         print("アップロードはスキップされました。")
 
+if __name__ == "__main__":
+    main()
