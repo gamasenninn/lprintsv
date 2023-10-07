@@ -328,4 +328,7 @@ def main():
         print("アップロードはスキップされました。")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        pass  # SystemExit例外が発生しても何もしない
