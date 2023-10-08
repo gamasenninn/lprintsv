@@ -5,7 +5,20 @@
 #
 #   実行はapp直下で。(.envの関係)
 #
-
+"""
+Web在庫       タグの状態  マスター  状態                棚卸対象  処理
+----------------------------------------------------------------------
+読み込めた     ある        1以上    在庫あり            ◯       棚卸処理
+読み込めた     ある        0        DB未同期            ◯       同期処理
+読み込めた     なし        1以上    在庫見つけてない              在庫を見つける（人力）
+読み込めた     なし        0        DB未同期                     同期処理
+----------------------------------------------------------------------
+読み込まない   ある        1以上    DB未同期かタグ未装着         同期処理
+読み込まない   ある        0        処理済か復活在庫か備品か      調査
+読み込まない   ある        -999     マスター登録前               マスター登録
+"""
+#
+#
 import os
 from dotenv import load_dotenv
 import requests
@@ -100,7 +113,10 @@ def upload_locations(payload,mode=None):
     data = {'action': "insert_all", 'mode': mode, 'srcdata': payload}
     return request_to_web_api(url, method="POST", payload=data)
 
-
+#
+# HEX文字列をアスキー文字列に変換する
+# -がない文字列は正規データとしてみなさない
+# (例:12345-1)
 def convert_line(line):
     line = line.strip()
     try:
@@ -160,9 +176,9 @@ def clean_string(s):
         t = t.replace("'","\\'")
     return t
 
+# 対象日付データをdatetime型に一括変換し、棚卸し日より前のデータをフィルタリング
+# ※棚卸日以降のデータは誰かが入力したものなので、そちらを優先するためである
 def filter_and_prepare_df(df_new, stock_date_time):
-    # 対象日付データをdatetime型に一括変換し、棚卸し日より前のデータをフィルタリング
-    # ※棚卸日以降のデータは誰かが入力したものなので、そちらを優先するためである
  
     #データの正規化
     df_new['create_date'] = pd.to_datetime(df_new['create_date'])
@@ -204,6 +220,7 @@ def upload_in_chunks(df_payload, mode=None,start_index=0, chunk_size=50):
             print(resdata)
             print("エラーのため処理を終了します")
             break
+
 # Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
 def get_and_prepare_location_data():
     print("商品の位置情報をWebから読みます。")
