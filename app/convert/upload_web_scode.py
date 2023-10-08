@@ -110,6 +110,8 @@ def convert_line(line):
         if '-' in str(decoded):
             return str(decoded)
         else:
+            print("Decode error for line but not include (-): ", line)
+            logging.error(f"Decode error for line but not include (-) '{line}'")
             return ''
     except ValueError as e:
         # バイナリデータの場合、そのまま返す
