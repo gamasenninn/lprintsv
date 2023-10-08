@@ -20,6 +20,7 @@ import pandas as pd
 import glob
 import logging
 import argparse
+from models import Product_tran, BaseSrc
 
 # ログの設定
 logging.basicConfig(
@@ -37,36 +38,11 @@ UPSERT=True
 ALLOWED_TAGS = ["北店", "道場", "店舗","第2展示場"]
 
 #------読込元データべース-----
-SQLALCHEMY_DATABASE_URL_SRC = os.environ['SQLALCHEMY_DATABASE_MYSQL']
-engine_src = create_engine(SQLALCHEMY_DATABASE_URL_SRC)
+#SQLALCHEMY_DATABASE_URL_SRC = os.environ['SQLALCHEMY_DATABASE_MYSQL']
+engine_src = create_engine(os.environ['SQLALCHEMY_DATABASE_MYSQL'])
 SessionLocal_src = sessionmaker(autocommit=False, autoflush=False, bind=engine_src)
 db_src = SessionLocal_src()
-BaseSrc = declarative_base()
-
-#-------MODEL------
-class Product_tran(BaseSrc):
-    __tablename__ = "V_商品_入出庫"
-
-    id = Column(Integer, primary_key=True, index=True, name="ID")
-    scode = Column(String, index=True, name="コード")
-    pname = Column(String, name="商品名")
-    stock_qty = Column(Integer, name="在庫数量")
-    stock_price = Column(Integer, name="単価")
-    receipt_date = Column(DateTime, name="日付")
-    sale_price = Column(Integer, name="販売価格")
-    sale_date = Column(DateTime, name="販売日付")
-    sale_person = Column(String, name="販売担当者")
-    delivery_person = Column(String, name="納品担当者")
-    disporsal_date = Column(DateTime, name="廃棄日付")
-    disporsal_person = Column(String, name="廃棄担当者")
-    memo = Column(String, name="備考")
-    sale_class = Column(String, name="販売区分")
-    category = Column(String, name="区分")
-    in_qty = Column(Integer, name="入庫数量")
-    person = Column(String, name="社員名")
-    vendor_no = Column(Integer, name="取引先No")
-    vendor_name = Column(String, name="取引先名")
-    last_update = Column(DateTime,name="_LastUpdate")
+#BaseSrc = declarative_base()
 
 #
 # 在庫チェック
@@ -78,88 +54,52 @@ def check_stock(scode):
         .first()
     )
     return product or None
+
+#リファクタリング
+def request_to_web_api(url, method="GET", payload=None):
+    auth = HTTPBasicAuth(
+        os.environ['LOCATION_WEB_ID'], 
+        os.environ['LOCATION_WEB_PASSWORD']
+    )
     
-def ____check_stock(scode):
-    product = (
-        db_src.query(Product_tran)
-        .filter(Product_tran.scode == scode)
-        .first()
+    headers = {'Content-Type': 'application/json'} if payload else {}
+    
+    response = requests.request(
+        method,
+        url,
+        data=json.dumps(payload) if payload else None,
+        headers=headers,
+        auth=auth
     )
 
-    if product:
-        return product.stock_qty
+    if response.json():
+        return response.json()
     else:
-        return(-999)
-#
-# scodeに対応するタイトルをデータベースから取得する
-#
-def get_title_from_db(scode):
-    product = (
-        db_src.query(Product_tran)
-        .filter(Product_tran.scode == scode)
-        .first()
-    )
-    if product:
-        return product.pname  # 商品名を返す
-    else:
-        return None
+        return {}
+
 #
 # Webから位置情報を取得する（1件分）
 #
 def get_location(scode):
-
     url = f"{os.environ['LOCATION_WEB_URL']}/?scode={scode}"
-    response = requests.get(url,auth=HTTPBasicAuth(
-        os.environ['LOCATION_WEB_ID'], 
-        os.environ['LOCATION_WEB_PASSWORD']
-    ))
-    if response.json():
-        return response.json()[0]
-    else:
-        return {}
-
+    response = request_to_web_api(url)
+    return response[0] if response else {}
 #
 # Webから位置情報を取得する（複数件分）
 # ローケーションデータ取得APIを叩いて、結果をDFで返す。
 #
 def get_location_all():
-
-    # GETリクエストを送るURL
     url = f"{os.environ['LOCATION_WEB_URL']}/?gte=1&limit={os.environ['LOCATION_LOAD_LIMIT']}"
+    return pd.DataFrame(request_to_web_api(url))
 
-    # リクエストを送信
-    response = requests.get(url,auth=HTTPBasicAuth(
-        os.environ['LOCATION_WEB_ID'], 
-        os.environ['LOCATION_WEB_PASSWORD']
-    ))
-    return pd.DataFrame(response.json())
-
- 
-def upload_locations(payload):
-
-    # POSTリクエストを送るURL
+#
+# Webにローケーションデータ（複数）をアップロードする。
+#
+def upload_locations(payload,mode=None):
     url = f"{os.environ['LOCATION_WEB_UPLOAD_URL']}"
-    #print("url:",url)
+    data = {'action': "insert_all", 'mode': mode, 'srcdata': payload}
+    return request_to_web_api(url, method="POST", payload=data)
 
-    # 送信するデータ
-    data = {
-		'action': "insert_all",
-        'mode': "test",
-		'srcdata': payload,
-    }
-    # リクエストを送信
-    response = requests.post(url, 
-                             data=json.dumps(data),
-                             headers={'Content-Type': 'application/json'},
-                             auth=HTTPBasicAuth(
-                                os.environ['LOCATION_WEB_ID'], 
-                                os.environ['LOCATION_WEB_PASSWORD']
-                             ))
-
-    # 応答のステータスコードとテキストを表示
-    #print('Status code:', response.status_code)
-    #print('Response text:', response.text.message)
-    return response
 
 def convert_line(line):
     line = line.strip()
@@ -247,87 +187,101 @@ def filter_and_prepare_df(df_new, stock_date_time):
     # 必要なカラムだけを選択する。
     return filtered_df[['srcdata','title','scode','aucid','old_place','place','old_category','category','memo','old_create_date','create_date']]
 
-
-def upload_in_chunks(df_payload, start_index=0, chunk_size=50):
+# データフレームを小さなチャンクに分割し、各チャンクをAPIを使ってアップロードする。エラーが発生した場合は処理を中断する。
+def upload_in_chunks(df_payload, mode=None,start_index=0, chunk_size=50):
+    go_mode = mode if mode else "test"
+    print(f"{go_mode}モードでアップロードします。")
     n = len(df_payload)
     for i in range(start_index, n, chunk_size):
         chunk = df_payload.iloc[i:i + chunk_size]
         dict_list_chunk = chunk.to_dict('records')
-        ret = upload_locations(dict_list_chunk)
-        resdata = json.loads(ret.text)
+        resdata = upload_locations(dict_list_chunk,mode=go_mode)
         print(i, i + chunk_size, len(dict_list_chunk), ":", resdata['mode'], ":", resdata['message'], resdata['error'][0])
         
         if resdata['error'][0] != "00000":
             print(resdata)
             print("エラーのため処理を終了します")
             break
+# Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
+def get_and_prepare_location_data():
+    print("商品の位置情報をWebから読みます。")
+    df = get_location_all()
+    df = df.rename(columns={'place': 'old_place', 'category': 'old_category', 'create_date': 'old_create_date'})
+    df.to_csv("df_initial.csv", encoding="cp932")
+    return df
+
+# RFIDタグのテキストファイルから商品コードと位置情報を読み込み、既存のデータフレームと外部結合する。
+def read_and_merge_rfid_tags(df, stock_date_time):
+    df_tana = pd.DataFrame()
+    for filetag, scode in read_rfid_file("convert/rfid_tags/*.txt"):
+        new_row = {'scode': scode, 'place': filetag, 'create_date': ''}
+        df_tana = df_tana.append(new_row, ignore_index=True)
+
+    if df_tana.empty:
+        print("タグデータが存在しません。処理を終了します。")
+        return None
+
+    stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
+    df_tana['create_date'] = stock_date_time_str
+    merged_df = pd.merge(df, df_tana, on='scode', how='outer')
+    merged_df.to_csv("df_merged.csv", encoding="cp932")
+    return merged_df
+
+# 商品マスタから在庫情報とメモを取得し、それらの情報をデータフレームに追加する。
+def enrich_with_master_data(df):
+    df['master_qty'] = 0
+    df['master_memo'] = ""
+    for idx, row in df.iterrows():
+        product = check_stock(row['scode'])
+        df.loc[idx, 'master_qty'] = product.stock_qty if product else -999
+        df.loc[idx, 'master_memo'] = product.memo if product else ""
+        if pd.isna(row['title']) or not row['title']:
+            df.loc[idx, 'title'] = product.pname if product else ""
+    df.to_csv("df_enriched.csv", encoding="cp932")
+    return df
+
+# データフレームから指定された条件に合う行をフィルタリングし、必要な列の前処理を施す。
+def filter_and_prepare_for_upload(df, stock_date_time):
+    df_filtered = filter_and_prepare_df(df, stock_date_time)
+    df_filtered.to_csv("df_filtered.csv", encoding="cp932")
+    return df_filtered
+
+# データフレームの長さ（行数）を出力し、アップロードするかどうかを選択する。選択された場合はアップロードを実行。
+def upload_data(df, noup,mode):
+    print("対象追加数: ", len(df))
+    if not noup:
+        upload_in_chunks(df, mode=mode, start_index=0, chunk_size=50)
+        print("アップロード終了しました。")
+    else:
+        print("--noupのため、アップロードはスキップされました。")
+
+# 主要な関数を呼び出して全体のアップロード処理を制御するメイン関数
+def upload_main(stock_date_time, noup=False, mode=None):
+    df = get_and_prepare_location_data()
+    if df is None:
+        return
+
+    df = read_and_merge_rfid_tags(df, stock_date_time)
+    if df is None:
+        return
+
+    df = enrich_with_master_data(df)
+    df_to_upload = filter_and_prepare_for_upload(df, stock_date_time)
+    upload_data(df_to_upload, noup,mode)
 
 
-def main():
+if __name__ == "__main__":
     # コマンドライン引数の設定
     try:
         parser = argparse.ArgumentParser(description='RFID アップロードスクリプト')
         parser.add_argument('--noup', action='store_true', help='アップロードしない場合にこのフラグを指定')
+        parser.add_argument('--mode', choices=['test', 'real'], help='テストモードか実戦モードを指定')
+
         args = parser.parse_args()
+        
+        stock_date_time = get_stock_date() # 棚卸し日を指定する
+        upload_main(stock_date_time,noup=args.noup,mode=args.mode)
+
     except SystemExit:
-        return
-
-    # 棚卸し日を指定する、指定した日付を棚卸日stock_date_timeとしておく
-    stock_date_time = get_stock_date()
-
-    # 在庫が存在する商品の位置情報をWebから読み、DFに格納する
-    # ※ここでは最新の棚卸しデータを参照する。
-    print("商品の位置情報をWebから読みます。")
-    df = get_location_all()
-    df = df.rename(columns={'place': 'old_place'})
-    df = df.rename(columns={'category': 'old_category'})
-    df = df.rename(columns={'create_date': 'old_create_date'})
-    df.to_csv("df.csv",encoding="cp932") #デバッグのためのCSV保存
-
-    # タグ読み込みdf_tanaに格納する
-    df_tana =  pd.DataFrame()
-    for filetag,scode in read_rfid_file("convert/rfid_tags/*.txt"):
-        #print(filetag,scode)      
-        new_row = {'scode': scode, 'place': filetag,'create_date': ''}
-        df_tana = df_tana.append(new_row, ignore_index=True)
-    if df_tana.empty:
-        print("タグデータが存在しません。処理を終了します。")
-        return
-
-    stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
-    df_tana['create_date'] = stock_date_time_str
-
-    # 現在在庫の位置情報,読み込んだタグの情報をマージする
-    df_new = pd.merge(df, df_tana, on='scode', how='outer')
-
-    # マスターの数量を代入しておく。状態チェックのため
-    df_new['master_qty'] = 0
-    df_new['master_memo'] = ""
-    for idx, row in df_new.iterrows():
-        product   = check_stock(row['scode'])
-        df_new.loc[idx, 'master_qty'] = product.stock_qty if product else -999
-        df_new.loc[idx, 'master_memo'] = product.memo if product else ""
-        if pd.isna(row['title']) or not row['title']:
-            df_new.loc[idx, 'title'] = product.pname if product else ""
-    df_new.to_csv("tana_scode.csv",encoding="cp932") #デバッグのためのCSV保存
+        pass
     
-    # 対象の棚卸日、以前のデータを抽出する
-    # さらに、RFIDデータ抽出し、JSONペイロードを作成する（条件:場所があるもの、在庫あるもの）
-    # ※棚卸日以降のデータは誰かが入力したものなので、そちらを優先するためである
-    df_payload = filter_and_prepare_df(df_new, stock_date_time)
-    df_payload.to_csv("stocked_rfid.csv",encoding="cp932") #デバッグのためのCSV保存
-    
-    # 在庫があるものだけを抽出してアップロードする
-    # 50行ごとにDataFrameを分割して処理
-    # start_indexがあることで、エラーがあった場合、データの開始位置を指定してそのデータから処理を続けられるようにできる。
-    print("対象追加数: ",len(df_payload))
-
-    if not args.noup:
-        upload_in_chunks(df_payload, start_index=0, chunk_size=50)
-        print("アップロード終了しました。")
-    else:
-        print("アップロードはスキップされました。")
-
-if __name__ == "__main__":
-    
-    main()
