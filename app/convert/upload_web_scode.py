@@ -233,6 +233,7 @@ def get_and_prepare_location_data():
 def read_and_merge_rfid_tags(df, stock_date_time):
     df_tana = pd.DataFrame()
     for filetag, scode in read_rfid_file("convert/rfid_tags/*.txt"):
+        print(f"scode: {filetag}/{scode}")
         new_row = {'scode': scode, 'place': filetag, 'create_date': ''}
         df_tana = df_tana.append(new_row, ignore_index=True)
 
