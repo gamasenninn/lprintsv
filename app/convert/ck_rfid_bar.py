@@ -7,7 +7,7 @@
 import glob
 import os
 import pandas as pd
-from models import Product_tran, BaseSrc
+from models import Product_tran, PostingItem,BaseSrc
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, Date,ForeignKey, desc,asc
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
@@ -32,6 +32,15 @@ def check_stock(scode):
         .first()
     )
     return product or None
+
+def check_posting_item_by_aucid(aucid):
+    postingItem = (
+        db_src.query(PostingItem)
+        .filter(PostingItem.aucid == aucid)
+        .first()
+    )
+    return postingItem or None
+
 #
 # HEX文字列をアスキー文字列に変換する
 # -がない文字列は正規データとしてみなさない
@@ -104,7 +113,10 @@ if __name__ == "__main__":
         if "?skey=" in any_code:
             scode = any_code.split("?skey=")[1] 
         elif "auction/" in items[0]:
-            scode = any_code.split("/auction/")[1]
+            aucid = any_code.split("/auction/")[1]
+            postingItem = check_posting_item_by_aucid(aucid)
+            print(f"出品カードからscodeを抽出した。{postingItem.aucid}..{postingItem.scode}")
+            scode = postingItem.scode
         else:
             scode = items[0]
 
@@ -133,7 +145,6 @@ if __name__ == "__main__":
     print("●バーコードには存在して、RFIDには存在しないもの:")
     print(right_only_df)
 
-
     #print("Left Only Codes:")
     print("●RFIDには存在して、バーコードには存在しないもの:")
     print(left_only_df)
@@ -141,11 +152,10 @@ if __name__ == "__main__":
 
     for scode in bar_df['bar_scode']:
         product = check_stock(scode)
-        print(f"product_qty: {scode}...{product.stock_qty}")
         if product is None:
-            print(f"Attributes of Product_tran for scode {scode}....{product.stock_qty}")
-
-
+            print(f"None product scode {scode}")
+        else:
+            print(f"product_qty: {scode}...{product.stock_qty}")
 
     # bar_dfに新しい列 'stock_info' を追加し、check_stockの結果を格納
     bar_df['stock_info'] = bar_df['bar_scode'].apply(check_stock)
@@ -156,3 +166,18 @@ if __name__ == "__main__":
     # 結果を表示
     print("Out of Stock Items:")
     print(out_of_stock_df)
+
+    #札を新規に発行し、使えるべきもの（バーコードはあるがrfidが存在しないもの＝書き込みミス）
+    print("\n札を新規に発行し、付け替えるべきリスト:")
+
+    # right_only_dfに新しい列 'stock_info' を追加し、check_stockの結果を格納
+    #right_only_df['stock_info'] = right_only_df['bar_scode'].apply(check_stock)
+    right_only_df = right_only_df.copy()
+    right_only_df.loc[:, 'stock_info'] = right_only_df['bar_scode'].apply(check_stock)
+
+    # stock_info からタイトル (pname) を取得して新しい列 'title' を作成
+    right_only_df.loc[:, 'title'] = right_only_df['stock_info'].apply(lambda x: x.pname if x is not None else 'Unknown')
+
+    # タイトルとscodeを両方表示
+    unique_df = right_only_df.drop_duplicates(subset='bar_scode', keep='first') #ダブったbar_scodeは一行にする
+    print(unique_df[['bar_scode','title']])
