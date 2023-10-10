@@ -4,14 +4,7 @@
 #
 #
 #
-import glob
-import os
 import pandas as pd
-from models import Product_tran, PostingItem,BaseSrc
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Date,ForeignKey, desc,asc
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-from dotenv import load_dotenv
 from ck_rfid_bar_tool import check_posting_item_by_aucid,check_stock
 from ck_rfid_bar_tool import read_bar_file,read_rfid_file
 
