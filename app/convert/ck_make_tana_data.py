@@ -53,4 +53,9 @@ if __name__ == "__main__":
 
         new_row = {'bar_scode': scode,'place':location,'create_date':date_time}
         bar_df = bar_df.append(new_row, ignore_index=True)
+
+
+    #CSVファイルを出力
+    bar_df = bar_df.drop_duplicates(subset='bar_scode')
+    bar_df.to_csv('convert/check/tana_data/tana.csv', index=False)
     print(bar_df)
