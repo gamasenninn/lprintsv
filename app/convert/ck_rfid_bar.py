@@ -88,7 +88,8 @@ if __name__ == "__main__":
 
     # stock_info からタイトル (pname) を取得して新しい列 'title' を作成
     right_only_df.loc[:, 'title'] = right_only_df['stock_info'].apply(lambda x: x.pname if x is not None else 'Unknown')
+    right_only_df.loc[:, 'stock_qty'] = right_only_df['stock_info'].apply(lambda x: x.stock_qty if x is not None else None)
 
     # タイトルとscodeを両方表示
     unique_df = right_only_df.drop_duplicates(subset='bar_scode', keep='first') #ダブったbar_scodeは一行にする
-    print(unique_df[['bar_scode','title']])
+    print(unique_df[['bar_scode','title','stock_qty']])
