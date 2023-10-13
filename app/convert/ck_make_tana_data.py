@@ -27,6 +27,17 @@ def parse_filetag(filetag):
         print(f"Failed to parse filetag: {filetag}")
         return None
 
+def enrich_with_master_data(df):
+    df['title'] = ""
+    df['master_qty'] = 0
+    df['master_memo'] = ""
+    for idx, row in df.iterrows():
+        product = check_stock(row['bar_scode'])
+        df.loc[idx, 'master_qty'] = product.stock_qty if product else -999
+        df.loc[idx, 'master_memo'] = product.memo if product else ""
+        if pd.isna(row['title']) or not row['title']:
+            df.loc[idx, 'title'] = product.pname if product else ""
+    return df
 
 
 if __name__ == "__main__":
@@ -51,11 +62,16 @@ if __name__ == "__main__":
         else:
             scode = items[0]
 
-        new_row = {'bar_scode': scode,'place':location,'create_date':date_time}
+        new_row = {'bar_scode': scode,'place':location,'category':'bar_qr','create_date':date_time}
         bar_df = bar_df.append(new_row, ignore_index=True)
 
 
-    #CSVファイルを出力
+    #複数行を一行に絞る
     bar_df = bar_df.drop_duplicates(subset='bar_scode')
-    bar_df.to_csv('convert/check/tana_data/tana.csv', index=False)
-    print(bar_df)
+
+    #タイトルなどを付加する
+    enrich_df = enrich_with_master_data(bar_df)
+
+
+    enrich_df.to_csv('convert/check/tana_data/tana.csv', index=False)
+    print(enrich_df)
