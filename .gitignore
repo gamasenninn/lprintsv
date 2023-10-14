@@ -136,6 +136,7 @@ app/convert/*
 !app/convert/ck_rfid_bar.py
 !app/convert/ck_rfid_bar_tool.py
 !app/convert/ck_make_tana_data.py
+!app/convert/tana_web_api.py
 
 
 front/quasar-app/src/pages/TestReload.vue
