@@ -8,17 +8,19 @@ import pandas as pd
 from tools.rfid_bar_tool import check_posting_item_by_aucid,check_stock
 from tools.rfid_bar_tool import read_bar_file,read_rfid_file
 
+CHECK_DIR = 'convert/check'
+
 
 if __name__ == "__main__":
     rfid_df = pd.DataFrame(columns=['rfid_scode'])
-    for filetag,scode in read_rfid_file('convert/check/ReadTag*.txt'):
+    for filetag,scode in read_rfid_file(f'{CHECK_DIR}/ReadTag*.txt'):
         #print(f"scode: {filetag}/{scode}")
         new_row = {'rfid_scode': scode}
         rfid_df = rfid_df.append(new_row, ignore_index=True)
     print(rfid_df)
 
     bar_df = pd.DataFrame(columns=['bar_scode'])
-    for filetag,items in read_bar_file('convert/check/ReadBarcode*.txt'):
+    for filetag,items in read_bar_file(f'{CHECK_DIR}//ReadBarcode*.txt'):
         #print(f"scode: {filetag}/{items[0]}")
         any_code = items[0]
         if "?skey=" in any_code:

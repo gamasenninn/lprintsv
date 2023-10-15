@@ -27,6 +27,8 @@ import argparse
 from tools.tana_web_api import get_location_all,upload_in_chunks
 from tools.rfid_bar_tool import check_stock,read_rfid_file
 
+TAGS_DIR = 'convert/rfid_tags'
+
 # ログの設定
 logging.basicConfig(
     filename='upload_rfid.log', 
@@ -99,7 +101,7 @@ def get_and_prepare_location_data():
 # RFIDタグのテキストファイルから商品コードと位置情報を読み込み、既存のデータフレームと外部結合する。
 def read_and_merge_rfid_tags(df, stock_date_time):
     df_tana = pd.DataFrame()
-    for filetag, scode in read_rfid_file("convert/rfid_tags/*.txt"):
+    for filetag, scode in read_rfid_file(f"{TAGS_DIR}/*.txt"):
         print(f"scode: {filetag}/{scode}")
         new_row = {'scode': scode, 'place': filetag, 'create_date': ''}
         df_tana = df_tana.append(new_row, ignore_index=True)

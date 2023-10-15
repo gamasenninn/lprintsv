@@ -138,6 +138,10 @@ app/convert/*
 !app/convert/ck_make_tana_data.py
 !app/convert/tools
 
+app/stocktake/check
+app/stocktake/rfid_tags
+
+
 
 front/quasar-app/src/pages/TestReload.vue
 __*.ts
