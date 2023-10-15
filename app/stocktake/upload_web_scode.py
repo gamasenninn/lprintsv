@@ -27,7 +27,7 @@ import argparse
 from tools.tana_web_api import get_location_all,upload_in_chunks
 from tools.rfid_bar_tool import check_stock,read_rfid_file
 
-TAGS_DIR = 'convert/rfid_tags'
+TAGS_DIR = 'stocktake/rfid_tags'
 
 # ログの設定
 logging.basicConfig(
