@@ -21,14 +21,11 @@ Web在庫       タグの状態  マスター  状態                棚卸対�
 #
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 import pandas as pd
-import glob
 import logging
 import argparse
-from models import Product_tran, BaseSrc
 from tools.tana_web_api import get_location_all,upload_in_chunks
+from tools.rfid_bar_tool import check_stock,read_rfid_file
 
 # ログの設定
 logging.basicConfig(
@@ -44,71 +41,6 @@ DEBUG=bool(int(os.environ['LOCATION_DEBUG']))
 UPSERT=True
 
 ALLOWED_TAGS = ["北店", "道場", "店舗","第2展示場"]
-
-#------読込元データべース-----
-#SQLALCHEMY_DATABASE_URL_SRC = os.environ['SQLALCHEMY_DATABASE_MYSQL']
-engine_src = create_engine(os.environ['SQLALCHEMY_DATABASE_MYSQL'])
-SessionLocal_src = sessionmaker(autocommit=False, autoflush=False, bind=engine_src)
-db_src = SessionLocal_src()
-#BaseSrc = declarative_base()
-
-#
-# 在庫チェック
-#
-def check_stock(scode):
-    product = (
-        db_src.query(Product_tran)
-        .filter(Product_tran.scode == scode)
-        .first()
-    )
-    return product or None
-
-#
-# HEX文字列をアスキー文字列に変換する
-# -がない文字列は正規データとしてみなさない
-# (例:12345-1)
-def convert_line(line):
-    line = line.strip()
-    try:
-        # バイナリデータではなく、16進数表現のASCII文字列であることを確認
-        decoded = bytes.fromhex(line).decode('ascii')
-        decoded = decoded.rstrip('\x00')
-        if '-' in str(decoded):
-            return str(decoded)
-        else:
-            print("Decode error for line but not include (-): ", line)
-            logging.error(f"Decode error for line but not include (-) '{line}'")
-            return ''
-    except ValueError as e:
-        # バイナリデータの場合、そのまま返す
-        print("decode error skipped:", line)
-        logging.error(f"Decode error for line '{line}': {e}")
-        return ''
-
-# ジェネレーターとしてファイルを読む
-def read_rfid_file(pattern):
-    allowed_tags = ALLOWED_TAGS  # 許可するタグ
-    filenames = glob.glob(pattern)
-
-    for file_path in filenames:
-        # ログ・ファイルに処理するファイル名を書く
-        logging.info(f"target file name: {file_path}")
-        filetag = os.path.splitext(os.path.basename(file_path))[0]
-
-        # filetag が allowed_tags リストに含まれていない場合、処理をスキップ
-        if filetag not in allowed_tags:
-            logging.warning(f"Skipping file {filetag} due to unrecognized tag.")
-            print(f"リストにないタグ名です。スキップします。.....{filetag} ")
-            continue  # 次のイテレーションに進む
-
-        # ファイルを開き、内容を表示する
-        print(f"読み込みします....{filetag}")
-        with open(file_path, 'r') as f:
-            for line in f:
-                scode = convert_line(line.strip())
-                if scode:
-                    yield filetag, scode
-        print(f"読み込みしました....{filetag}")
 
 # 棚卸し日の取得
 def get_stock_date():
