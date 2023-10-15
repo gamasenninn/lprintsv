@@ -5,8 +5,8 @@
 #
 #
 import pandas as pd
-from ck_rfid_bar_tool import check_posting_item_by_aucid,check_stock
-from ck_rfid_bar_tool import read_bar_file,read_rfid_file
+from tools.rfid_bar_tool import check_posting_item_by_aucid,check_stock
+from tools.rfid_bar_tool import read_bar_file,read_rfid_file
 
 
 if __name__ == "__main__":
