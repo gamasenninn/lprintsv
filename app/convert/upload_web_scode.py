@@ -21,19 +21,14 @@ Web在庫       タグの状態  マスター  状態                棚卸対�
 #
 import os
 from dotenv import load_dotenv
-import requests
-from requests.auth import HTTPBasicAuth
-import json
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Date,ForeignKey, desc,asc
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
-from datetime import datetime
-import sys
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import pandas as pd
 import glob
 import logging
 import argparse
 from models import Product_tran, BaseSrc
+from tana_web_api import get_location_all,upload_in_chunks
 
 # ログの設定
 logging.basicConfig(
@@ -67,51 +62,6 @@ def check_stock(scode):
         .first()
     )
     return product or None
-
-#リファクタリング
-def request_to_web_api(url, method="GET", payload=None):
-    auth = HTTPBasicAuth(
-        os.environ['LOCATION_WEB_ID'], 
-        os.environ['LOCATION_WEB_PASSWORD']
-    )
-    
-    headers = {'Content-Type': 'application/json'} if payload else {}
-    
-    response = requests.request(
-        method,
-        url,
-        data=json.dumps(payload) if payload else None,
-        headers=headers,
-        auth=auth
-    )
-
-    if response.json():
-        return response.json()
-    else:
-        return {}
-
-#
-# Webから位置情報を取得する（1件分）
-#
-def get_location(scode):
-    url = f"{os.environ['LOCATION_WEB_URL']}/?scode={scode}"
-    response = request_to_web_api(url)
-    return response[0] if response else {}
-#
-# Webから位置情報を取得する（複数件分）
-# ローケーションデータ取得APIを叩いて、結果をDFで返す。
-#
-def get_location_all():
-    url = f"{os.environ['LOCATION_WEB_URL']}/?gte=1&limit={os.environ['LOCATION_LOAD_LIMIT']}"
-    return pd.DataFrame(request_to_web_api(url))
-
-#
-# Webにローケーションデータ（複数）をアップロードする。
-#
-def upload_locations(payload,mode=None):
-    url = f"{os.environ['LOCATION_WEB_UPLOAD_URL']}"
-    data = {'action': "insert_all", 'mode': mode, 'srcdata': payload}
-    return request_to_web_api(url, method="POST", payload=data)
 
 #
 # HEX文字列をアスキー文字列に変換する
@@ -205,21 +155,6 @@ def filter_and_prepare_df(df_new, stock_date_time):
     # 必要なカラムだけを選択する。
     return filtered_df[['srcdata','title','scode','aucid','old_place','place','old_category','category','memo','old_create_date','create_date']]
 
-# データフレームを小さなチャンクに分割し、各チャンクをAPIを使ってアップロードする。エラーが発生した場合は処理を中断する。
-def upload_in_chunks(df_payload, mode=None,start_index=0, chunk_size=50):
-    go_mode = mode if mode else "test"
-    print(f"{go_mode}モードでアップロードします。")
-    n = len(df_payload)
-    for i in range(start_index, n, chunk_size):
-        chunk = df_payload.iloc[i:i + chunk_size]
-        dict_list_chunk = chunk.to_dict('records')
-        resdata = upload_locations(dict_list_chunk,mode=go_mode)
-        print(i, i + chunk_size, len(dict_list_chunk), ":", resdata['mode'], ":", resdata['message'], resdata['error'][0])
-        
-        if resdata['error'][0] != "00000":
-            print(resdata)
-            print("エラーのため処理を終了します")
-            break
 
 # Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
 def get_and_prepare_location_data():
