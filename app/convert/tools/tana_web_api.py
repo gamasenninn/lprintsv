@@ -93,4 +93,4 @@ def upload_data(df, noup,mode):
 if __name__ == "__main__":
     # コマンドライン引数の設定
     
-    ret = get_location("")
+    pass
