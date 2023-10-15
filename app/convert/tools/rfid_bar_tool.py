@@ -2,8 +2,6 @@
 #　RFIDとバーコードのコードが一致しているかをチェックする
 #　データがきちんと書かれているかどうか
 #
-#
-#
 import glob
 import os
 import pandas as pd
@@ -15,7 +13,7 @@ from dotenv import load_dotenv
 
 load_dotenv('.env')
 
-
+# 在庫チェック用のDBを準備する
 engine_src = create_engine(os.environ['SQLALCHEMY_DATABASE_MYSQL'])
 SessionLocal_src = sessionmaker(autocommit=False, autoflush=False, bind=engine_src)
 db_src = SessionLocal_src()
@@ -93,8 +91,6 @@ def read_bar_file(pattern):
                 items = line.split(',')
                 yield filetag, items
         print(f"読み込みしました....{filetag}")
-
-
 
 
 if __name__ == "__main__":
