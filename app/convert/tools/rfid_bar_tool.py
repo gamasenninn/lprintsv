@@ -7,10 +7,9 @@
 import glob
 import os
 import pandas as pd
-from models import Product_tran, PostingItem,BaseSrc
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Date,ForeignKey, desc,asc
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from models import Product_tran, PostingItem
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 
