@@ -28,7 +28,7 @@ import glob
 import logging
 import argparse
 from models import Product_tran, BaseSrc
-from tana_web_api import get_location_all,upload_in_chunks
+from tools.tana_web_api import get_location_all,upload_in_chunks
 
 # ログの設定
 logging.basicConfig(
