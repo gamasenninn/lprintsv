@@ -8,7 +8,7 @@ import pandas as pd
 from tools.rfid_bar_tool import check_posting_item_by_aucid,check_stock
 from tools.rfid_bar_tool import read_bar_file,read_rfid_file
 
-CHECK_DIR = 'convert/check'
+CHECK_DIR = 'stocktake/check'
 
 
 if __name__ == "__main__":
@@ -28,8 +28,11 @@ if __name__ == "__main__":
         elif "auction/" in items[0]:
             aucid = any_code.split("/auction/")[1]
             postingItem = check_posting_item_by_aucid(aucid)
-            print(f"出品カードからscodeを抽出した。{postingItem.aucid}..{postingItem.scode}")
-            scode = postingItem.scode
+            if postingItem:
+                print(f"出品カードからscodeを抽出した。{postingItem.aucid}..{postingItem.scode}")
+                scode = postingItem.scode
+            else:
+                scode = ''
         else:
             scode = items[0]
 
@@ -81,7 +84,7 @@ if __name__ == "__main__":
     print(out_of_stock_df)
 
     #札を新規に発行し、使えるべきもの（バーコードはあるがrfidが存在しないもの＝書き込みミス）
-    print("\n札を新規に発行し、付け替えるべきリスト:")
+    print("\n札を新規に発行し、付け替えるべきリスト(バーコードから):")
 
     # right_only_dfに新しい列 'stock_info' を追加し、check_stockの結果を格納
     #right_only_df['stock_info'] = right_only_df['bar_scode'].apply(check_stock)
@@ -95,3 +98,23 @@ if __name__ == "__main__":
     # タイトルとscodeを両方表示
     unique_df = right_only_df.drop_duplicates(subset='bar_scode', keep='first') #ダブったbar_scodeは一行にする
     print(unique_df[['bar_scode','title','stock_qty']])
+
+    #札を新規に発行し、使えるべきもの（rfidにはあるがバーコードに存在しないもの）
+    print("\n札を新規に発行し、付け替えるべきリスト(RFIDから):")
+
+    # right_only_dfに新しい列 'stock_info' を追加し、check_stockの結果を格納
+    #right_only_df['stock_info'] = right_only_df['bar_scode'].apply(check_stock)
+    left_only_df = left_only_df.copy()
+    unique_df = left_only_df.drop_duplicates(subset='rfid_scode', keep='first') #ダブったbar_scodeは一行にする
+    #print(unique_df)
+
+    unique_df.loc[:, 'stock_info'] = unique_df['rfid_scode'].apply(check_stock)
+
+    # stock_info からタイトル (pname) を取得して新しい列 'title' を作成
+    unique_df.loc[:, 'title'] = unique_df['stock_info'].apply(lambda x: x.pname if x is not None else 'Unknown')
+    unique_df.loc[:, 'stock_qty'] = unique_df['stock_info'].apply(lambda x: x.stock_qty if x is not None else None)
+
+    # タイトルとscodeを両方表示
+    print(unique_df[['rfid_scode','title','stock_qty']])
+    print(unique_df[['rfid_scode','title','stock_qty']].to_csv(f'{CHECK_DIR}/rfid_bq_diff.csv', index=False))
+
