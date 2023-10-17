@@ -104,8 +104,8 @@ if __name__ == "__main__":
 
     # right_only_dfに新しい列 'stock_info' を追加し、check_stockの結果を格納
     #right_only_df['stock_info'] = right_only_df['bar_scode'].apply(check_stock)
-    left_only_df = left_only_df.copy()
-    unique_df = left_only_df.drop_duplicates(subset='rfid_scode', keep='first') #ダブったbar_scodeは一行にする
+    #left_only_df = left_only_df.copy()
+    unique_df = left_only_df.drop_duplicates(subset='rfid_scode', keep='first').copy() #ダブったbar_scodeは一行にする
     #print(unique_df)
 
     unique_df.loc[:, 'stock_info'] = unique_df['rfid_scode'].apply(check_stock)
