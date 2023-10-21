@@ -9,6 +9,7 @@ from models import Product_tran, PostingItem
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
+import re
 
 
 load_dotenv('.env')
@@ -37,6 +38,15 @@ def check_posting_item_by_aucid(aucid):
         .first()
     )
     return postingItem or None
+
+def get_stock_all():
+    product = (
+        db_src.query(Product_tran)
+        .filter(Product_tran.stock_qty >= 1)
+        .all()
+    )
+    return product or None
+
 
 #
 # HEX文字列をアスキー文字列に変換する
@@ -92,6 +102,18 @@ def read_bar_file(pattern):
                 yield filetag, items
         print(f"読み込みしました....{filetag}")
 
+def parse_filetag(filetag,prefix="ReadBarcode"):
+    # 正規表現を使用して年月日、時間、および店舗情報を抽出
+
+    match = re.match(f'{prefix}'+r'(\d{8})_(\d{6})_(.+)', filetag)
+    if match:
+        date_str, time_str, location = match.groups()
+        # 日付と時間を指定されたフォーマットで整形し、連結
+        formatted_datetime = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]} {time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
+        return formatted_datetime, location
+    else:
+        print(f"Failed to parse filetag: {filetag}")
+        return None
 
 if __name__ == "__main__":
     pass

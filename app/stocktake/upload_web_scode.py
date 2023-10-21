@@ -25,7 +25,8 @@ import pandas as pd
 import logging
 import argparse
 from tools.tana_web_api import get_location_all,upload_in_chunks
-from tools.rfid_bar_tool import check_stock,read_rfid_file
+from tools.rfid_bar_tool import check_stock,read_rfid_file,parse_filetag
+from tools.rfid_bar_tool import get_stock_all
 
 TAGS_DIR = 'stocktake/rfid_tags'
 
@@ -42,16 +43,10 @@ load_dotenv('.env')
 DEBUG=bool(int(os.environ['LOCATION_DEBUG']))
 UPSERT=True
 
-ALLOWED_TAGS = ["北店", "道場", "店舗","第2展示場"]
+#ALLOWED_TAGS = ["北店", "道場", "店舗","第2展示場"]
 
-# 棚卸し日の取得
-def get_stock_date():
-    stock_date_time_str = input("棚卸日(yyyy-mm-dd hh:mm:ss):")
-    if not stock_date_time_str:
-        input("棚卸日が未定の場合はシステム時刻が採用されます。よろしいですか？")
-        return pd.Timestamp.now()  # システムの現在時刻を使用
-    else:
-        return pd.Timestamp(stock_date_time_str)  # 文字列からTimestampオブジェクトを作成
+class FormatError(Exception):
+    pass
 
 # 文字列のクレンジング関数
 def clean_string(s):
@@ -99,25 +94,45 @@ def get_and_prepare_location_data():
     return df
 
 # RFIDタグのテキストファイルから商品コードと位置情報を読み込み、既存のデータフレームと外部結合する。
-def read_and_merge_rfid_tags(df, stock_date_time):
+def read_and_merge_rfid_tags(df):
     df_tana = pd.DataFrame()
     for filetag, scode in read_rfid_file(f"{TAGS_DIR}/*.txt"):
-        print(f"scode: {filetag}/{scode}")
-        new_row = {'scode': scode, 'place': filetag, 'create_date': ''}
+        result = parse_filetag(filetag,prefix="ReadTag")
+        if result:
+            date_time,location = result
+        else:
+            raise FormatError("format error")
+        print(f"scode: {filetag}/{scode}/{date_time}/{location}")
+
+        new_row = {'scode': scode, 'place': location, 'create_date': date_time}
         df_tana = df_tana.append(new_row, ignore_index=True)
 
     if df_tana.empty:
         print("タグデータが存在しません。処理を終了します。")
         return None
 
-    stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
-    df_tana['create_date'] = stock_date_time_str
+    #stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
+    #df_tana['create_date'] = stock_date_time_str
     merged_df = pd.merge(df, df_tana, on='scode', how='outer')
     merged_df.to_csv("df_merged.csv", encoding="cp932")
     return merged_df
 
 # 商品マスタから在庫情報とメモを取得し、それらの情報をデータフレームに追加する。
 def enrich_with_master_data(df):
+
+    products = get_stock_all()
+    if products is not None:
+        # 必要なフィールドだけを選択してDataFrameに変換
+        product_df = pd.DataFrame([{"scode": p.scode, "master_title": p.pname, "master_qty": p.stock_qty,"master_memo":p.memo} for p in products])
+
+    #print(product_df)
+    merged_df = pd.merge(df, product_df, on='scode', how='outer')
+    #複数行を一行にする
+    merged_df = merged_df.drop_duplicates(subset='scode')
+
+    merged_df.to_csv("df_enriched.csv", encoding="cp932")
+    return merged_df
+
     df['master_qty'] = 0
     df['master_memo'] = ""
     for idx, row in df.iterrows():
@@ -145,16 +160,19 @@ def upload_data(df, noup,mode):
         print("--noupのため、アップロードはスキップされました。")
 
 # 主要な関数を呼び出して全体のアップロード処理を制御するメイン関数
-def upload_main(stock_date_time, noup=False, mode=None):
+def upload_main(noup=False, mode=None):
     df = get_and_prepare_location_data()
     if df is None:
         return
 
-    df = read_and_merge_rfid_tags(df, stock_date_time)
+    df = read_and_merge_rfid_tags(df)
     if df is None:
         return
 
     df = enrich_with_master_data(df)
+
+    exit()
+
     df_to_upload = filter_and_prepare_for_upload(df, stock_date_time)
     upload_data(df_to_upload, noup,mode)
 
@@ -168,8 +186,8 @@ if __name__ == "__main__":
 
         args = parser.parse_args()
         
-        stock_date_time = get_stock_date() # 棚卸し日を指定する
-        upload_main(stock_date_time,noup=args.noup,mode=args.mode)
+        #stock_date_time = get_stock_date() # 棚卸し日を指定する
+        upload_main(noup=args.noup,mode=args.mode)
 
     except SystemExit:
         pass
