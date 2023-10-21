@@ -20,18 +20,6 @@ GO_DIR = 'stocktake/check/tana_data'
 class FormatError(Exception):
     pass
 
-#def parse_filetag(filetag):
-    # 正規表現を使用して年月日、時間、および店舗情報を抽出
-#    match = re.match(r'ReadBarcode(\d{8})_(\d{6})_(.+)', filetag)
-#    if match:
-#        date_str, time_str, location = match.groups()
-#        # 日付と時間を指定されたフォーマットで整形し、連結
-#        formatted_datetime = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]} {time_str[:2]}:{time_str[2:4]}:{time_str[4:]}"
-#        return formatted_datetime, location
-#    else:
-#        print(f"Failed to parse filetag: {filetag}")
-#        return None
-
 def enrich_with_master_data(df):
     df['title'] = ""
     df['master_qty'] = 0
