@@ -30,6 +30,7 @@ from tools.rfid_bar_tool import get_stock_all
 import numpy as np
 
 TAGS_DIR = 'stocktake/rfid_tags'
+OUT_DIR = 'stocktake'
 
 # ログの設定
 logging.basicConfig(
@@ -109,7 +110,7 @@ def get_and_prepare_location_data():
     print("商品の位置情報をWebから読みます。")
     df = get_location_all()
     df = df.rename(columns={'place': 'old_place', 'category': 'old_category', 'create_date': 'old_create_date'})
-    df.to_csv("df_initial.csv", encoding="cp932")
+    df.to_csv(f"{OUT_DIR}/df_initial.csv", encoding="cp932")
     return df
 
 # RFIDタグのテキストファイルから商品コードと位置情報を読み込み、既存のデータフレームと外部結合する。
@@ -132,9 +133,11 @@ def read_and_merge_rfid_tags(df):
 
     #stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
     #df_tana['create_date'] = stock_date_time_str
-    df_tana.to_csv("df_rfid_daa.csv", encoding="cp932")
+    df_tana = df_tana.drop_duplicates(subset='scode')
+
+    df_tana.to_csv(f"{OUT_DIR}/df_rfid_daa.csv", encoding="cp932")
     merged_df = pd.merge(df_tana,df, on='scode', how='outer')
-    merged_df.to_csv("df_merged.csv", encoding="cp932")
+    merged_df.to_csv(f"{OUT_DIR}/df_merged.csv", encoding="cp932")
     return merged_df
 
 # 商品マスタから在庫情報とメモを取得し、それらの情報をデータフレームに追加する。
@@ -154,7 +157,7 @@ def enrich_with_master_data(df):
     merged_df['title'].fillna(merged_df['master_title'], inplace=True)
 
 
-    merged_df.to_csv("df_enriched.csv", encoding="cp932")
+    merged_df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932")
     return merged_df
 
     df['master_qty'] = 0
@@ -165,13 +168,13 @@ def enrich_with_master_data(df):
         df.loc[idx, 'master_memo'] = product.memo if product else ""
         if pd.isna(row['title']) or not row['title']:
             df.loc[idx, 'title'] = product.pname if product else ""
-    df.to_csv("df_enriched.csv", encoding="cp932")
+    df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932")
     return df
 
 # データフレームから指定された条件に合う行をフィルタリングし、必要な列の前処理を施す。
 def filter_and_prepare_for_upload(df):
     df_filtered = filter_and_prepare_df(df)
-    df_filtered.to_csv("df_filtered.csv", encoding="cp932")
+    df_filtered.to_csv(f"{OUT_DIR}/df_filtered.csv", encoding="cp932")
     return df_filtered
 
 # データフレームの長さ（行数）を出力し、アップロードするかどうかを選択する。選択された場合はアップロードを実行。
