@@ -67,7 +67,8 @@ def filter_and_prepare_df(df_new):
     # 棚卸し日より前のデータと、場所があるもの、在庫があるものをフィルタリング
     filtered_df = df_new.loc[
         #(df_new['old_create_date'] < df_new['create_date']) & 
-        df_new['place'].notna() & 
+        #df_new['place'].notna() & 
+        df_new['create_date'].notna() & 
         (df_new['master_qty'].astype(int) >= 0)
     ].copy()  # この時点で明示的にコピーを作成
 
@@ -155,21 +156,20 @@ def enrich_with_master_data(df):
 
     merged_df['title'].replace('', np.nan, inplace=True)
     merged_df['title'].fillna(merged_df['master_title'], inplace=True)
+    merged_df['master_qty'].fillna(0, inplace=True)
 
+
+    #df['master_qty'] = 0
+    #df['master_memo'] = ""
+    for idx, row in df.iterrows():
+        product = check_stock(row['scode'])
+        merged_df.loc[idx, 'master_qty'] = product.stock_qty if product else -999
+        merged_df.loc[idx, 'master_memo'] = product.memo if product else ""
+        if pd.isna(row['title']) or not row['title']:
+            merged_df.loc[idx, 'title'] = product.pname if product else ""
 
     merged_df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932")
     return merged_df
-
-    df['master_qty'] = 0
-    df['master_memo'] = ""
-    for idx, row in df.iterrows():
-        product = check_stock(row['scode'])
-        df.loc[idx, 'master_qty'] = product.stock_qty if product else -999
-        df.loc[idx, 'master_memo'] = product.memo if product else ""
-        if pd.isna(row['title']) or not row['title']:
-            df.loc[idx, 'title'] = product.pname if product else ""
-    df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932")
-    return df
 
 # データフレームから指定された条件に合う行をフィルタリングし、必要な列の前処理を施す。
 def filter_and_prepare_for_upload(df):
