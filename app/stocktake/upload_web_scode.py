@@ -64,12 +64,12 @@ def filter_and_prepare_df(df_new):
     df_new['product_qty'].fillna(0, inplace=True)
     df_new['master_qty'].fillna(0, inplace=True)
 
-    # 棚卸し日より前のデータと、場所があるもの、在庫があるものをフィルタリング
+    # 在庫数が0よりあるものをフィルタリング
     filtered_df = df_new.loc[
         #(df_new['old_create_date'] < df_new['create_date']) & 
         #df_new['place'].notna() & 
         df_new['create_date'].notna() & 
-        (df_new['master_qty'].astype(int) >= 0)
+        (df_new['master_qty'].astype(int) > 0)
     ].copy()  # この時点で明示的にコピーを作成
 
     filtered_df['category'] = "rfid"
