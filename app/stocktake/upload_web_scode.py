@@ -65,9 +65,11 @@ def filter_and_prepare_df(df_new):
     df_new['master_qty'].fillna(0, inplace=True)
 
     # 在庫数が0よりあるものをフィルタリング
+    # 移動があったものだけをフィルターするべきか・・・・・・
     filtered_df = df_new.loc[
         #(df_new['old_create_date'] < df_new['create_date']) & 
         #df_new['place'].notna() & 
+        (df_new['old_place'] !=  df_new['place']) & 
         df_new['create_date'].notna() & 
         (df_new['master_qty'].astype(int) > 0)
     ].copy()  # この時点で明示的にコピーを作成
@@ -200,8 +202,6 @@ def upload_main(noup=False, mode=None):
 
 
     df_to_upload = filter_and_prepare_for_upload(df)
-
-    exit()
 
 
     upload_data(df_to_upload, noup,mode)
