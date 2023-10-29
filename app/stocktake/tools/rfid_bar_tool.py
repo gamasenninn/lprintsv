@@ -117,6 +117,28 @@ def parse_filetag(filetag,prefix="ReadBarcode"):
 ######
 # 近傍位置情報検索
 ######
+def find_closest_9999_codes(code_data, reverse=False):
+    closest_codes_dict = {}
+    last_9999_code = None
+    special_9999_code = None
+
+    iter_data = list(reversed(code_data)) if reverse else list(code_data)
+    
+    for code in iter_data:
+        if code.startswith("9999"):
+            special_9999_code = code
+            break
+    
+    for code in iter_data:
+        if code.startswith("9999"):
+            last_9999_code = code
+        else:
+            closest_codes_dict[code] = last_9999_code if last_9999_code else special_9999_code
+                
+    return closest_codes_dict
+
+
+
 # 順読みのロジック
 def find_closest_9999_codes_with_lookahead(code_data):
     closest_codes_dict = {}
@@ -162,29 +184,40 @@ def find_closest_9999_codes_reverse_with_lookahead(code_data):
     return closest_codes_dict
 
 # マージのロジック
+
 def merge_forward_and_reverse_results(forward_result, reverse_result):
     return {key: (forward_result.get(key, None), reverse_result.get(key, None)) for key in set(forward_result) | set(reverse_result)}
+
 
 # 元のテストデータの並び順に整える
 def order_by_original_data(merged_result, original_data):
     return {key: merged_result[key] for key in original_data if key in merged_result}
 
-
 def group_place(code_data):
     # 順読みの結果を取得
-    forward_result = find_closest_9999_codes_with_lookahead(code_data)
+    forward_result = find_closest_9999_codes(code_data)
 
     # 逆読みの結果を取得
-    reverse_result = find_closest_9999_codes_reverse_with_lookahead(code_data)
+    reverse_result = find_closest_9999_codes(code_data,reverse=True)
 
     # 順読みと逆読みの結果をマージ
-    return  merge_forward_and_reverse_results(forward_result, reverse_result)
+    merged_result = merge_forward_and_reverse_results(forward_result, reverse_result)
 
+    return  merge_dicts(merged_result,{})
+
+# Function to merge two dictionaries with tuple values
+
+def merge_dicts(dict1, dict2):
+    merged_dict = dict1.copy()
+    for key, value in dict2.items():
+        merged_dict[key] = tuple(set(merged_dict.get(key, ())) | set(value))
+    return merged_dict
 
 def read_rfid_make_group_dict(pattern):
     filenames = glob.glob(pattern)
-    scode_list = []
+    merged_dict = {}
     for file_path in filenames:
+        scode_list = []
         with open(file_path, 'r') as f:
             for line in f:
                 scode = convert_line(line.strip())
@@ -192,4 +225,6 @@ def read_rfid_make_group_dict(pattern):
                     print(f"読み込みしました....{scode}")
                     scode_list.append(scode)
 
-    return scode_list
+        scode_dict = group_place(scode_list)
+        merged_dict = merge_dicts(merged_dict,scode_dict)
+    return merged_dict
