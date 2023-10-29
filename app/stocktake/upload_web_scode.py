@@ -79,35 +79,6 @@ def filter_and_prepare_df(df_new):
     # 必要なカラムだけを選択する。
     return filtered_df[['srcdata','title','scode','aucid','old_place','place','old_category','category','memo','old_create_date','create_date']]
 
-
-    return df_new
- 
-    #データの正規化
-    df_new['create_date'] = pd.to_datetime(df_new['create_date'])
-    df_new['old_create_date'] = pd.to_datetime(df_new['old_create_date'])
-    df_new['product_qty'].fillna(0, inplace=True)
-    df_new['master_qty'].fillna(0, inplace=True)
-    
-    # 棚卸し日より前のデータと、場所があるもの、在庫があるものをフィルタリング
-    filtered_df = df_new.loc[
-        (df_new['old_create_date'] < df_new['create_date']) & 
-        df_new['place'].notna() & 
-        (df_new['master_qty'].astype(int) >= 0)
-    ].copy()  # この時点で明示的にコピーを作成
-
-    # 前処理を行う
-    filtered_df['place'].fillna('', inplace=True)
-    filtered_df.loc[:, 'title'] = filtered_df['title'].apply(clean_string)
-    # 新しいcreate_dateとcategoryを設定
-    #filtered_df['create_date'] = stock_date_time
-    filtered_df['create_date'] = filtered_df['create_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    filtered_df['old_create_date'] = filtered_df['old_create_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-    filtered_df['category'] = "rfid"
-    
-    # 必要なカラムだけを選択する。
-    return filtered_df[['srcdata','title','scode','aucid','old_place','place','old_category','category','memo','old_create_date','create_date']]
-
-
 # Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
 def get_and_prepare_location_data():
     print("商品の位置情報をWebから読みます。")
@@ -117,6 +88,7 @@ def get_and_prepare_location_data():
     return df
 
 # RFIDタグのテキストファイルから商品コードと位置情報を読み込み、既存のデータフレームと外部結合する。
+
 def read_and_merge_rfid_tags(df):
     df_tana = pd.DataFrame()
     for filetag, scode in read_rfid_file(f"{TAGS_DIR}/*.txt"):

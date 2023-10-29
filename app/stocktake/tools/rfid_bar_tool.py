@@ -11,7 +11,6 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import re
 
-
 load_dotenv('.env')
 
 # 在庫チェック用のDBを準備する
@@ -115,5 +114,82 @@ def parse_filetag(filetag,prefix="ReadBarcode"):
         print(f"Failed to parse filetag: {filetag}")
         return None
 
-if __name__ == "__main__":
-    pass
+######
+# 近傍位置情報検索
+######
+# 順読みのロジック
+def find_closest_9999_codes_with_lookahead(code_data):
+    closest_codes_dict = {}
+    last_9999_code = None
+    first_9999_code = None
+    
+    for code in code_data:
+        if code.startswith("9999"):
+            first_9999_code = code
+            break
+    
+    for code in code_data:
+        if code.startswith("9999"):
+            last_9999_code = code
+        else:
+            if last_9999_code:
+                closest_codes_dict[code] = last_9999_code
+            else:
+                closest_codes_dict[code] = first_9999_code
+                
+    return closest_codes_dict
+
+# 逆読みのロジック
+def find_closest_9999_codes_reverse_with_lookahead(code_data):
+    closest_codes_dict = {}
+    last_9999_code = None
+    last_9999_code_in_list = None
+    
+    for code in reversed(code_data):
+        if code.startswith("9999"):
+            last_9999_code_in_list = code
+            break
+    
+    for code in reversed(code_data):
+        if code.startswith("9999"):
+            last_9999_code = code
+        else:
+            if last_9999_code:
+                closest_codes_dict[code] = last_9999_code
+            else:
+                closest_codes_dict[code] = last_9999_code_in_list
+                
+    return closest_codes_dict
+
+# マージのロジック
+def merge_forward_and_reverse_results(forward_result, reverse_result):
+    return {key: (forward_result.get(key, None), reverse_result.get(key, None)) for key in set(forward_result) | set(reverse_result)}
+
+# 元のテストデータの並び順に整える
+def order_by_original_data(merged_result, original_data):
+    return {key: merged_result[key] for key in original_data if key in merged_result}
+
+
+def group_place(code_data):
+    # 順読みの結果を取得
+    forward_result = find_closest_9999_codes_with_lookahead(code_data)
+
+    # 逆読みの結果を取得
+    reverse_result = find_closest_9999_codes_reverse_with_lookahead(code_data)
+
+    # 順読みと逆読みの結果をマージ
+    return  merge_forward_and_reverse_results(forward_result, reverse_result)
+
+
+def read_rfid_make_group_dict(pattern):
+    filenames = glob.glob(pattern)
+    scode_list = []
+    for file_path in filenames:
+        with open(file_path, 'r') as f:
+            for line in f:
+                scode = convert_line(line.strip())
+                if scode:
+                    print(f"読み込みしました....{scode}")
+                    scode_list.append(scode)
+
+    return scode_list
