@@ -78,7 +78,7 @@ def filter_and_prepare_df(df_new):
     filtered_df['category'] = "rfid"
 
     # 必要なカラムだけを選択する。
-    return filtered_df[['srcdata','title','scode','aucid','old_place','place','old_category','category','memo','old_create_date','create_date']]
+    return filtered_df[['srcdata','title','scode','aucid','old_place','place','block','old_category','category','memo','old_create_date','create_date']]
 
 # Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
 def get_and_prepare_location_data():
