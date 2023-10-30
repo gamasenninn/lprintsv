@@ -222,7 +222,7 @@ def read_rfid_make_group_dict(pattern):
             for line in f:
                 scode = convert_line(line.strip())
                 if scode:
-                    print(f"読み込みしました....{scode}")
+                    #print(f"読み込みしました....{scode}")
                     scode_list.append(scode)
 
         scode_dict = group_place(scode_list)
