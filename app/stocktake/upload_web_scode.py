@@ -27,6 +27,7 @@ import argparse
 from tools.tana_web_api import get_location_all,upload_in_chunks
 from tools.rfid_bar_tool import check_stock,read_rfid_file,parse_filetag
 from tools.rfid_bar_tool import get_stock_all
+from tools.rfid_bar_tool import read_rfid_make_group_dict
 import numpy as np
 
 TAGS_DIR = 'stocktake/rfid_tags'
@@ -141,6 +142,11 @@ def enrich_with_master_data(df):
         merged_df.loc[idx, 'master_memo'] = product.memo if product else ""
         if pd.isna(row['title']) or not row['title']:
             merged_df.loc[idx, 'title'] = product.pname if product else ""
+
+    #
+    scode_dict = read_rfid_make_group_dict(f"{TAGS_DIR}/*.txt")
+    merged_df['block'] = merged_df['scode'].apply(lambda x: ' '.join(scode_dict.get(x, [])))
+
 
     merged_df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932")
     return merged_df

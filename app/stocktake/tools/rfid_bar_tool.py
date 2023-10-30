@@ -128,6 +128,9 @@ def find_closest_9999_codes(code_data, reverse=False):
         if code.startswith("9999"):
             special_9999_code = code
             break
+        # 9999で始まるコードが見つからなかったら、空の辞書を返す
+    if special_9999_code is None:
+        return {}
     
     for code in iter_data:
         if code.startswith("9999"):
@@ -137,54 +140,7 @@ def find_closest_9999_codes(code_data, reverse=False):
                 
     return closest_codes_dict
 
-
-
-# 順読みのロジック
-def find_closest_9999_codes_with_lookahead(code_data):
-    closest_codes_dict = {}
-    last_9999_code = None
-    first_9999_code = None
-    
-    for code in code_data:
-        if code.startswith("9999"):
-            first_9999_code = code
-            break
-    
-    for code in code_data:
-        if code.startswith("9999"):
-            last_9999_code = code
-        else:
-            if last_9999_code:
-                closest_codes_dict[code] = last_9999_code
-            else:
-                closest_codes_dict[code] = first_9999_code
-                
-    return closest_codes_dict
-
-# 逆読みのロジック
-def find_closest_9999_codes_reverse_with_lookahead(code_data):
-    closest_codes_dict = {}
-    last_9999_code = None
-    last_9999_code_in_list = None
-    
-    for code in reversed(code_data):
-        if code.startswith("9999"):
-            last_9999_code_in_list = code
-            break
-    
-    for code in reversed(code_data):
-        if code.startswith("9999"):
-            last_9999_code = code
-        else:
-            if last_9999_code:
-                closest_codes_dict[code] = last_9999_code
-            else:
-                closest_codes_dict[code] = last_9999_code_in_list
-                
-    return closest_codes_dict
-
 # マージのロジック
-
 def merge_forward_and_reverse_results(forward_result, reverse_result):
     return {key: (forward_result.get(key, None), reverse_result.get(key, None)) for key in set(forward_result) | set(reverse_result)}
 
@@ -196,6 +152,8 @@ def order_by_original_data(merged_result, original_data):
 def group_place(code_data):
     # 順読みの結果を取得
     forward_result = find_closest_9999_codes(code_data)
+    if not forward_result:
+        return {}
 
     # 逆読みの結果を取得
     reverse_result = find_closest_9999_codes(code_data,reverse=True)
@@ -213,6 +171,10 @@ def merge_dicts(dict1, dict2):
         merged_dict[key] = tuple(set(merged_dict.get(key, ())) | set(value))
     return merged_dict
 
+# 辞書内のデータをソートしてタプルに変換、かつ重複を取り除く
+def normalize_dict_values_to_tuples(d):
+    return {k: tuple(sorted(set(v))) if isinstance(v, (set, list, tuple)) else (v,) for k, v in d.items()}
+
 def read_rfid_make_group_dict(pattern):
     filenames = glob.glob(pattern)
     merged_dict = {}
@@ -226,5 +188,20 @@ def read_rfid_make_group_dict(pattern):
                     scode_list.append(scode)
 
         scode_dict = group_place(scode_list)
-        merged_dict = merge_dicts(merged_dict,scode_dict)
-    return merged_dict
+        if scode_dict:
+            merged_dict = merge_dicts(merged_dict,scode_dict)
+    return normalize_dict_values_to_tuples(merged_dict)
+    #return merged_dict
+
+# キーに対応する値を空白で区切って返す関数
+def get_values_as_string(key, dictionary):
+    values_tuple = dictionary.get(key, ())
+    return " ".join(values_tuple)
+
+#コードをHEX文字列に変換
+def convert_to_file_data_hex(test_data):
+    file_data = []
+    for item in test_data:
+        converted_item = ''.join([format(ord(char), 'x') for char in item])
+        file_data.append(converted_item)
+    return file_data
