@@ -15,9 +15,6 @@ load_dotenv('.env')
 DEBUG=bool(int(os.environ['LOCATION_DEBUG']))
 UPSERT=True
 
-ALLOWED_TAGS = ["北店", "道場", "店舗","第2展示場"]
-
-
 # API呼び出し
 def request_to_web_api(url, method="GET", payload=None):
     auth = HTTPBasicAuth(
