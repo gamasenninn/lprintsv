@@ -51,3 +51,46 @@ python upload_web_scode.py
 
 - マスタデータやWeb APIの定義は実際に合わせてカスタマイズが必要です。
 - ログを取ることを推奨します。
+
+はい、README.mdに以下を追記しました。
+
+# Web APIの呼び出しについて
+
+tana_web_api.pyに定義されている関数を使って、Web APIを呼び出すことができます。
+
+- get_location: 商品コードから位置情報を取得
+- get_location_all: 全商品の位置情報を取得  
+- upload_locations: 位置情報をアップロード
+- upload_in_chunks: データフレームをチャンク分割してアップロード
+
+## 位置情報の取得
+
+```python
+from tana_web_api import get_location
+
+data = get_location(商品コード)
+```
+
+## 位置情報の一括取得
+
+```python 
+from tana_web_api import get_location_all
+
+df = get_location_all()
+```
+
+## 位置情報のアップロード
+
+```python
+from tana_web_api import upload_in_chunks
+
+upload_in_chunks(データフレーム, mode="test") 
+```
+
+modeには"test"か"real"を指定。
+
+## その他
+
+実際のAPIの定義に合わせて、認証方法やエンドポイントを設定する必要があります。
+
+.envファイルにAPIキー等を設定して利用することを想定しています。
