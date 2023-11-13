@@ -56,6 +56,7 @@ def clean_string(s):
     if isinstance(s, str):
         t = s.replace('\u3000', ' ')
         t = t.replace("'","\\'")
+        #t = t.replace("'","’")
     return t
 
 # 対象日付データをdatetime型に一括変換し、棚卸し日より前のデータをフィルタリング
@@ -70,7 +71,8 @@ def filter_and_prepare_df(df_new):
     filtered_df = df_new.loc[
         #(df_new['old_create_date'] < df_new['create_date']) & 
         #df_new['place'].notna() & 
-        (df_new['old_place'] !=  df_new['place']) & 
+        #移動のあったものだけをフィルタリングする場合
+        #(df_new['old_place'] !=  df_new['place']) & 
         df_new['create_date'].notna() & 
         (df_new['master_qty'].astype(int) > 0)
     ].copy()  # この時点で明示的にコピーを作成
@@ -84,6 +86,9 @@ def filter_and_prepare_df(df_new):
 def get_and_prepare_location_data():
     print("商品の位置情報をWebから読みます。")
     df = get_location_all()
+    if 'title' in df.columns:
+        df['title'] = df['title'].apply(clean_string)
+
     df = df.rename(columns={'place': 'old_place', 'category': 'old_category', 'create_date': 'old_create_date'})
     df.to_csv(f"{OUT_DIR}/df_initial.csv", encoding="cp932")
     return df
@@ -141,7 +146,7 @@ def enrich_with_master_data(df):
         merged_df.loc[idx, 'master_qty'] = product.stock_qty if product else -999
         merged_df.loc[idx, 'master_memo'] = product.memo if product else ""
         if pd.isna(row['title']) or not row['title']:
-            merged_df.loc[idx, 'title'] = product.pname if product else ""
+            merged_df.loc[idx, 'title'] = clean_string(product.pname) if product else ""
 
     #
     scode_dict = read_rfid_make_group_dict(f"{TAGS_DIR}/*.txt")
@@ -158,16 +163,16 @@ def filter_and_prepare_for_upload(df):
     return df_filtered
 
 # データフレームの長さ（行数）を出力し、アップロードするかどうかを選択する。選択された場合はアップロードを実行。
-def upload_data(df, noup,mode):
+def upload_data(df, noup,mode, start_index, chunk_size):
     print("対象追加数: ", len(df))
     if not noup:
-        upload_in_chunks(df, mode=mode, start_index=0, chunk_size=50)
+        upload_in_chunks(df, mode=mode, start_index=start_index, chunk_size=chunk_size)
         print("アップロード終了しました。")
     else:
         print("--noupのため、アップロードはスキップされました。")
 
 # 主要な関数を呼び出して全体のアップロード処理を制御するメイン関数
-def upload_main(noup=False, mode=None):
+def upload_main(noup=False, mode=None,start_index=0, chunk_size=50):
     df = get_and_prepare_location_data()
     if df is None:
         return
@@ -182,7 +187,7 @@ def upload_main(noup=False, mode=None):
     df_to_upload = filter_and_prepare_for_upload(df)
 
 
-    upload_data(df_to_upload, noup,mode)
+    upload_data(df_to_upload, noup,mode, start_index, chunk_size)
 
 
 if __name__ == "__main__":
@@ -192,10 +197,14 @@ if __name__ == "__main__":
         parser.add_argument('--noup', action='store_true', help='アップロードしない場合にこのフラグを指定')
         parser.add_argument('--mode', choices=['test', 'real'], help='テストモードか実戦モードを指定')
 
+        # 新しい引数を追加
+        parser.add_argument('--start_index', type=int, default=0, help='開始インデックスを指定')
+        parser.add_argument('--chunk_size', type=int, default=50, help='チャンクサイズを指定')
+
         args = parser.parse_args()
         
         #stock_date_time = get_stock_date() # 棚卸し日を指定する
-        upload_main(noup=args.noup,mode=args.mode)
+        upload_main(noup=args.noup,mode=args.mode, start_index=args.start_index, chunk_size=args.chunk_size)
 
     except SystemExit:
         pass
