@@ -24,19 +24,20 @@ def request_to_web_api(url, method="GET", payload=None):
     
     headers = {'Content-Type': 'application/json'} if payload else {}
     
-    response = requests.request(
-        method,
-        url,
-        data=json.dumps(payload) if payload else None,
-        headers=headers,
-        auth=auth
-    )
-
-    if response.json():
+    try:
+        response = requests.request(
+            method,
+            url,
+            data=json.dumps(payload) if payload else None,
+            headers=headers,
+            auth=auth
+        )
         return response.json()
-    else:
+    except requests.exceptions.JSONDecodeError as e:
+        # JSONデコードエラーが発生した場合、生のレスポンスデータを出力
+        print("JSON decode error: ", e)
+        print("payload response data: ", payload)
         return {}
-
 #
 # Webから位置情報を取得する（1件分）
 #

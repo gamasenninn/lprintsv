@@ -79,6 +79,13 @@ def filter_and_prepare_df(df_new):
 
     filtered_df['category'] = "rfid"
 
+    filtered_df['old_create_date'].fillna(filtered_df['create_date'], inplace=True)
+    filtered_df['old_category'].fillna('rfid', inplace=True)
+    filtered_df['memo'].fillna('', inplace=True)
+    filtered_df['aucid'].fillna('', inplace=True)
+    filtered_df['old_place'].fillna(filtered_df['place'], inplace=True)
+    filtered_df['srcdata'].fillna('', inplace=True)
+
     # 必要なカラムだけを選択する。
     return filtered_df[['srcdata','title','scode','aucid','old_place','place','block','old_category','category','memo','old_create_date','create_date']]
 
@@ -137,7 +144,6 @@ def enrich_with_master_data(df):
     merged_df['title'].replace('', np.nan, inplace=True)
     merged_df['title'].fillna(merged_df['master_title'], inplace=True)
     merged_df['master_qty'].fillna(0, inplace=True)
-
 
     #df['master_qty'] = 0
     #df['master_memo'] = ""
