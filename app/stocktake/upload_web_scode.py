@@ -212,6 +212,9 @@ if __name__ == "__main__":
         #stock_date_time = get_stock_date() # 棚卸し日を指定する
         upload_main(noup=args.noup,mode=args.mode, start_index=args.start_index, chunk_size=args.chunk_size)
 
+    except FormatError:
+        print("入力データのフォーマットに誤りがあります")
+
     except SystemExit:
         pass
     
