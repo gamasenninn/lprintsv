@@ -2,15 +2,14 @@ from gspread_dataframe import get_as_dataframe, set_with_dataframe
 import gspread
 from dotenv import load_dotenv
 import os
+from oauth2client.service_account import ServiceAccountCredentials
+
 
 load_dotenv()
 SECRET_JSON = os.environ["SECRET_JSON"]
 SPREADSHEET_KEY = os.environ["SPREADSHEET_KEY"]
 
 #---------Googleスプレッドシートの事前設定 ---------------------
-
-#ServiceAccountCredentials：Googleの各サービスへアクセスできるservice変数を生成します。
-from oauth2client.service_account import ServiceAccountCredentials
 
 #2つのAPIを記述しないとリフレッシュトークンを3600秒毎に発行し続けなければならない
 scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
@@ -33,6 +32,9 @@ gs_df.dropna(how='all', inplace=True)
 # 'Unnamed:' で始まるカラムを識別して削除
 gs_df = gs_df.loc[:, ~gs_df.columns.str.contains('^Unnamed')]
 
-print(gs_df.head)
+# 'scode' 列に基づいて重複行を削除
+unique_gs_df = gs_df.drop_duplicates(subset='仕切番号',keep='last')
+
+print(unique_gs_df.head)
 
 
