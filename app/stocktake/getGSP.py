@@ -1,40 +1,69 @@
-from gspread_dataframe import get_as_dataframe, set_with_dataframe
 import gspread
+from gspread_dataframe import get_as_dataframe
+from oauth2client.service_account import ServiceAccountCredentials
 from dotenv import load_dotenv
 import os
-from oauth2client.service_account import ServiceAccountCredentials
+import pandas as pd
+
+def load_spreadsheet(secret_json, spreadsheet_key):
+    scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(secret_json, scope)
+    gc = gspread.authorize(credentials)
+    workbook = gc.open_by_key(spreadsheet_key)
+    return workbook
+
+def get_cleaned_dataframe(workbook, worksheet_name):
+    worksheet = workbook.worksheet(worksheet_name)
+    df = get_as_dataframe(worksheet, evaluate_formulas=True)
+    df.dropna(how='all', inplace=True)
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+    return df
+
+def remove_duplicates(df, column_name):
+    return df.drop_duplicates(subset=column_name, keep='last')
+
+def get_gsp():
+    SECRET_JSON = os.environ["SECRET_JSON"]
+    SPREADSHEET_KEY = os.environ["SPREADSHEET_KEY"]
+
+    workbook = load_spreadsheet(SECRET_JSON, SPREADSHEET_KEY)
+    gs_df_shop = get_cleaned_dataframe(workbook, 'IM店売進捗')
+    gs_df_net = get_cleaned_dataframe(workbook, 'IMネット売進捗')
+
+    # gs_df_net から特定のカラムを抽出
+    selected_columns_net = ['仕切', '支払い方法', '商談状況', '店長確認']
+    gs_df_net_selected = gs_df_net[selected_columns_net]
+    gs_df_net_selected = gs_df_net_selected.rename(columns={
+        '仕切': 'scode',
+        '支払い方法': 'payment',
+        '商談状況': 'nego_status',
+        '店長確認': 'confirmation'
+    })
+    gs_df_net_selected['sell_type'] ="ネット売"
+
+    # gs_df_shop から特定のカラムを抽出
+    selected_columns_shop = ['仕切', '支払', '商談状況', '確認']
+    gs_df_shop_selected = gs_df_shop[selected_columns_shop]
+    gs_df_shop_selected = gs_df_shop_selected.rename(columns={
+        '仕切': 'scode',
+        '支払': 'payment',
+        '商談状況': 'nego_status',
+        '確認': 'confirmation'
+    })
+    gs_df_shop_selected['sell_type'] ="店売"
 
 
-load_dotenv()
-SECRET_JSON = os.environ["SECRET_JSON"]
-SPREADSHEET_KEY = os.environ["SPREADSHEET_KEY"]
+    # gs_df_net_selected と gs_df_shop_selected を合体
+    combined_df = pd.concat([gs_df_net_selected, gs_df_shop_selected], axis=0)
+    #print("//////////統合/////////////")
+    #print( combined_df.head())
 
-#---------Googleスプレッドシートの事前設定 ---------------------
+    unique_gs_df = remove_duplicates(combined_df, 'scode')
 
-#2つのAPIを記述しないとリフレッシュトークンを3600秒毎に発行し続けなければならない
-scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+    return unique_gs_df
 
-#認証情報設定
-#ダウンロードしたjsonファイル名をクレデンシャル変数に設定
-credentials = ServiceAccountCredentials.from_json_keyfile_name(SECRET_JSON, scope)
+if __name__ == "__main__":
 
-#OAuth2の資格情報を使用してGoogle APIにログインします。
-gc = gspread.authorize(credentials)
-
-#----------------- 売約シート(店売)の読み込み・整理 ---------------------
-workbook = gc.open_by_key(SPREADSHEET_KEY)
-worksheet = workbook.worksheet('出品データ')
-gs_df = get_as_dataframe(worksheet,evaluate_formulas=True)
-
-# 空白行を削除
-gs_df.dropna(how='all', inplace=True)
-
-# 'Unnamed:' で始まるカラムを識別して削除
-gs_df = gs_df.loc[:, ~gs_df.columns.str.contains('^Unnamed')]
-
-# 'scode' 列に基づいて重複行を削除
-unique_gs_df = gs_df.drop_duplicates(subset='仕切番号',keep='last')
-
-print(unique_gs_df.head)
-
-
+    load_dotenv()
+    df = get_gsp()
+    print(df.head())
