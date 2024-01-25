@@ -142,3 +142,4 @@ front/quasar-app/src/pages/TestReload.vue
 __*.ts
 __*.vue
 *.csv
+app/stocktake/*.json
