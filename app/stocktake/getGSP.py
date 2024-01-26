@@ -34,6 +34,11 @@ def get_gsp():
     gs_df_shop = get_cleaned_dataframe(workbook, 'IM店売進捗')
     gs_df_net = get_cleaned_dataframe(workbook, 'IMネット売進捗')
 
+    # For Debug
+    #gs_df_shop.to_csv('gs_shop',encoding='utf8')
+    #gs_df_net.to_csv('gs_net',encoding='utf8')
+
+
     # gs_df_net から特定のカラムを抽出
     selected_columns_net = ['仕切', '支払い方法', '商談状況', '店長確認']
     gs_df_net_selected = gs_df_net[selected_columns_net]
