@@ -29,19 +29,23 @@ from tools.rfid_bar_tool import check_stock,read_rfid_file,parse_filetag
 from tools.rfid_bar_tool import get_stock_all
 from tools.rfid_bar_tool import read_rfid_make_group_dict
 import numpy as np
+from tools.find_env import find_dotenv
+from getGSP import get_gsp
 
-TAGS_DIR = 'stocktake/rfid_tags'
-OUT_DIR = 'stocktake'
+load_dotenv(find_dotenv())
+
+TAGS_DIR = os.environ['TAGS_DIR']
+OUT_DIR = os.environ['OUT_DIR']
+TAGS_LOG_FILE_PATH = os.environ['TAGS_LOG_FILE_PATH']
 
 # ログの設定
 logging.basicConfig(
-    filename='upload_rfid.log', 
+    filename=TAGS_LOG_FILE_PATH, 
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s', 
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-load_dotenv('.env')
 
 DEBUG=bool(int(os.environ['LOCATION_DEBUG']))
 UPSERT=True
@@ -87,7 +91,7 @@ def filter_and_prepare_df(df_new):
     filtered_df['srcdata'].fillna('', inplace=True)
 
     # 必要なカラムだけを選択する。
-    return filtered_df[['srcdata','title','scode','aucid','old_place','place','block','old_category','category','memo','old_create_date','create_date']]
+    return filtered_df[['srcdata','title','scode','aucid','old_place','place','block','old_category','category','memo','old_create_date','create_date','payment','confirmation']]
 
 # Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
 def get_and_prepare_location_data():
@@ -122,9 +126,13 @@ def read_and_merge_rfid_tags(df):
     #stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
     #df_tana['create_date'] = stock_date_time_str
     df_tana = df_tana.drop_duplicates(subset='scode')
+    df_tana.to_csv(f"{OUT_DIR}/df_rfid_data.csv", encoding="cp932")
 
-    df_tana.to_csv(f"{OUT_DIR}/df_rfid_daa.csv", encoding="cp932")
-    merged_df = pd.merge(df_tana,df, on='scode', how='outer')
+    #GSPからデータを取得
+    df_gsp = get_gsp()
+
+    merged_df = pd.merge(df_tana,df,on='scode', how='outer')
+    merged_df = pd.merge(merged_df,df_gsp, on='scode', how='outer')
     merged_df.to_csv(f"{OUT_DIR}/df_merged.csv", encoding="cp932")
     return merged_df
 
@@ -197,6 +205,10 @@ def upload_main(noup=False, mode=None,start_index=0, chunk_size=50):
 
 
 if __name__ == "__main__":
+
+    env_path = find_dotenv()
+    print(env_path)
+    load_dotenv(env_path)
     # コマンドライン引数の設定
     try:
         parser = argparse.ArgumentParser(description='RFID アップロードスクリプト')
