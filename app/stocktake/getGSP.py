@@ -4,9 +4,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 from dotenv import load_dotenv
 import os
 import pandas as pd
+from tools.find_env import find_dotenv
+
+GOOGLE_SCOPE = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+
 
 def load_spreadsheet(secret_json, spreadsheet_key):
-    scope = ['https://spreadsheets.google.com/feeds','https://www.googleapis.com/auth/drive']
+    scope = GOOGLE_SCOPE
     credentials = ServiceAccountCredentials.from_json_keyfile_name(secret_json, scope)
     gc = gspread.authorize(credentials)
     workbook = gc.open_by_key(spreadsheet_key)
@@ -40,6 +44,7 @@ def get_gsp():
         '店長確認': 'confirmation'
     })
     gs_df_net_selected['sell_type'] ="ネット売"
+    gs_df_net_selected.fillna('',inplace=True)
 
     # gs_df_shop から特定のカラムを抽出
     selected_columns_shop = ['仕切', '支払', '商談状況', '確認']
@@ -51,6 +56,7 @@ def get_gsp():
         '確認': 'confirmation'
     })
     gs_df_shop_selected['sell_type'] ="店売"
+    gs_df_shop_selected.fillna('',inplace=True)
 
 
     # gs_df_net_selected と gs_df_shop_selected を合体
@@ -64,6 +70,7 @@ def get_gsp():
 
 if __name__ == "__main__":
 
-    load_dotenv()
+    load_dotenv(find_dotenv())
     df = get_gsp()
     print(df.head())
+    df.to_csv("gsp.csv",encoding="utf8")

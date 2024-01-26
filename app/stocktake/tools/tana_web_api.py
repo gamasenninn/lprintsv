@@ -9,11 +9,10 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import pandas as pd
+from .find_env import find_dotenv
 
-load_dotenv('.env')
 
-DEBUG=bool(int(os.environ['LOCATION_DEBUG']))
-UPSERT=True
+load_dotenv(find_dotenv())
 
 # API呼び出し
 def request_to_web_api(url, method="GET", payload=None):
@@ -89,6 +88,4 @@ def upload_data(df, noup,mode):
 
 
 if __name__ == "__main__":
-    # コマンドライン引数の設定
-    
     pass

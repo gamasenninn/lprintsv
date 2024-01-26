@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import re
 
-load_dotenv('.env')
+#load_dotenv('.env')
 
 # 在庫チェック用のDBを準備する
 engine_src = create_engine(os.environ['SQLALCHEMY_DATABASE_MYSQL'])
