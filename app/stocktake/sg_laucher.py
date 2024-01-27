@@ -20,7 +20,7 @@ def run_command(command, parameters, window):
     global stop_thread
     try:
         env = os.environ.copy()
-        env['PYTHONUNBUFFERED'] = "1" 
+        env['PYTHONUNBUFFERED'] = "1"  # Pythonぷろせすにはこれが必要
         command_list = command.split() + parameters.split()
         process = subprocess.Popen(command_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1, universal_newlines=True,env=env)
 
