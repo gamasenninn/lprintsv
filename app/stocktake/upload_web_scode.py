@@ -77,6 +77,8 @@ def filter_and_prepare_df(df_new):
         #df_new['place'].notna() & 
         #移動のあったものだけをフィルタリングする場合
         #(df_new['old_place'] !=  df_new['place']) & 
+        # 棚卸しデータに存在しないものは除外
+        df_new['id'].notna() & 
         df_new['create_date'].notna() & 
         (df_new['master_qty'].astype(int) > 0)
     ].copy()  # この時点で明示的にコピーを作成
