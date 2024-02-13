@@ -88,4 +88,10 @@ def upload_data(df, noup,mode):
 
 
 if __name__ == "__main__":
-    pass
+    #pass
+
+    response = get_location('17777-1')
+    print(response)
+
+    df = get_location_all()
+    print(df)
