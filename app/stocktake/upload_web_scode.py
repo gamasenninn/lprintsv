@@ -73,7 +73,7 @@ def filter_and_prepare_df(df_new):
     # 在庫数が0よりあるものをフィルタリング
     # 移動があったものだけをフィルターするべきか・・・・・・
     filtered_df = df_new.loc[
-        #(df_new['old_create_date'] < df_new['create_date']) & 
+        (df_new['old_create_date'] < df_new['create_date']) & 
         #df_new['place'].notna() & 
         #移動のあったものだけをフィルタリングする場合
         #(df_new['old_place'] !=  df_new['place']) & 
