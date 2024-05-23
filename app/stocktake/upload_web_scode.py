@@ -135,7 +135,7 @@ def read_and_merge_rfid_tags(df):
 
     merged_df = pd.merge(df_tana,df,on='scode', how='outer')
     merged_df = pd.merge(merged_df,df_gsp, on='scode', how='outer')
-    merged_df.to_csv(f"{OUT_DIR}/df_merged.csv", encoding="cp932")
+    merged_df.to_csv(f"{OUT_DIR}/df_merged.csv", encoding="cp932",errors='ignore')
     return merged_df
 
 # 商品マスタから在庫情報とメモを取得し、それらの情報をデータフレームに追加する。
@@ -169,13 +169,13 @@ def enrich_with_master_data(df):
     merged_df['block'] = merged_df['scode'].apply(lambda x: ' '.join(scode_dict.get(x, [])))
 
 
-    merged_df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932")
+    merged_df.to_csv(f"{OUT_DIR}/df_enriched.csv", encoding="cp932",errors='ignore')
     return merged_df
 
 # データフレームから指定された条件に合う行をフィルタリングし、必要な列の前処理を施す。
 def filter_and_prepare_for_upload(df):
     df_filtered = filter_and_prepare_df(df)
-    df_filtered.to_csv(f"{OUT_DIR}/df_filtered.csv", encoding="cp932")
+    df_filtered.to_csv(f"{OUT_DIR}/df_filtered.csv", encoding="cp932",errors='ignore')
     return df_filtered
 
 # データフレームの長さ（行数）を出力し、アップロードするかどうかを選択する。選択された場合はアップロードを実行。
