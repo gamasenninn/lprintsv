@@ -106,6 +106,31 @@ def get_and_prepare_location_data():
     df.to_csv(f"{OUT_DIR}/df_initial.csv", encoding="cp932")
     return df
 
+# Web APIから商品の位置情報を取得し、列名をリネームして初期データフレームを作成する。
+def get_igonore_location_data():
+
+    df_tana = pd.DataFrame()
+    for filetag, scode in read_rfid_file(f"{TAGS_DIR}/*ignore.txt"):
+        result = parse_filetag(filetag,prefix="ReadTag")
+        if result:
+            date_time,location = result
+        else:
+            raise FormatError("format error")
+        print(f"scode: {filetag}/{scode}/{date_time}/{location}")
+
+        new_row = {'scode': scode, 'place': location, 'create_date': date_time}
+        df_tana = df_tana.append(new_row, ignore_index=True)
+
+    if df_tana.empty:
+        print("タグデータが存在しません。処理を終了します。")
+        return None
+
+    #stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
+    #df_tana['create_date'] = stock_date_time_str
+    df_tana = df_tana.drop_duplicates(subset='scode', keep='first')
+    df_tana.to_csv(f"{OUT_DIR}/df_rfid_ignore.csv", encoding="cp932")
+
+
 # RFIDタグのテキストファイルから商品コードと位置情報を読み込み、既存のデータフレームと外部結合する。
 
 def read_and_merge_rfid_tags(df):
@@ -127,7 +152,7 @@ def read_and_merge_rfid_tags(df):
 
     #stock_date_time_str = stock_date_time.strftime('%Y-%m-%d %H:%M:%S')
     #df_tana['create_date'] = stock_date_time_str
-    df_tana = df_tana.drop_duplicates(subset='scode')
+    df_tana = df_tana.drop_duplicates(subset='scode', keep='first')
     df_tana.to_csv(f"{OUT_DIR}/df_rfid_data.csv", encoding="cp932")
 
     #GSPからデータを取得
@@ -149,7 +174,7 @@ def enrich_with_master_data(df):
     #print(product_df)
     merged_df = pd.merge(df, product_df, on='scode', how='outer')
     #複数行を一行にする
-    merged_df = merged_df.drop_duplicates(subset='scode')
+    merged_df = merged_df.drop_duplicates(subset='scode', keep='first')
 
     merged_df['title'].replace('', np.nan, inplace=True)
     merged_df['title'].fillna(merged_df['master_title'], inplace=True)
@@ -216,15 +241,21 @@ if __name__ == "__main__":
         parser = argparse.ArgumentParser(description='RFID アップロードスクリプト')
         parser.add_argument('--noup', action='store_true', help='アップロードしない場合にこのフラグを指定')
         parser.add_argument('--mode', choices=['test', 'real'], help='テストモードか実戦モードを指定')
+        parser.add_argument('--ignore', action='store_true', help='非対象データを作成')
 
         # 新しい引数を追加
         parser.add_argument('--start_index', type=int, default=0, help='開始インデックスを指定')
         parser.add_argument('--chunk_size', type=int, default=50, help='チャンクサイズを指定')
 
         args = parser.parse_args()
-        
-        #stock_date_time = get_stock_date() # 棚卸し日を指定する
-        upload_main(noup=args.noup,mode=args.mode, start_index=args.start_index, chunk_size=args.chunk_size)
+
+        if args.ignore:
+            print("make ignore list ....")
+            get_igonore_location_data()
+            print("finish ignore list .")
+        else:
+            #stock_date_time = get_stock_date() # 棚卸し日を指定する
+            upload_main(noup=args.noup,mode=args.mode, start_index=args.start_index, chunk_size=args.chunk_size)
 
     except FormatError:
         print("入力データのフォーマットに誤りがあります")
