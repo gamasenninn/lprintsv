@@ -80,7 +80,8 @@ def filter_and_prepare_df(df_new):
         # 棚卸しデータに存在しないものは除外
         df_new['id'].notna() & 
         df_new['create_date'].notna() & 
-        (df_new['master_qty'].astype(int) > 0)
+        (df_new['master_qty'].astype(int) > 0) &
+        (df_new['place'] != '無視' )
     ].copy()  # この時点で明示的にコピーを作成
 
     filtered_df['category'] = "rfid"
